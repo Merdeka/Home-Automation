@@ -62,7 +62,7 @@ SoftwareSerial solcom(14, 4);                            // serial to conect to 
 Soladin sol;						  // copy of soladin class
 boolean connectSol = 0 ;				  // if soladin responds
 
-void doMeasure(){
+static void doMeasure(){
   
   if (!connectSol) {      			        // Try to connect
     
@@ -124,7 +124,7 @@ void doMeasure(){
   }
 }
 
-void serialFlush() {
+static void serialFlush() {
     #if ARDUINO >= 100
         Serial.flush();
     #endif  
@@ -132,7 +132,7 @@ void serialFlush() {
 }
 
 // periodic report, i.e. send out a packet and optionally report on serial port
-void doReport() {
+static void doReport() {
   
     char buffer[sizeof soladin];
     memcpy(buffer, &soladin, sizeof soladin);   
@@ -202,7 +202,7 @@ void loop()
 }
 
 
-void doFW(){
+static void doFW(){
   if (connectSol)  {      				// already connected
     for (int i=0 ; i < 4 ; i++) {			// give me some time to return by hand
       if (sol.query(FWI)) {				// request firware information
@@ -212,7 +212,7 @@ void doFW(){
   }
 }
 
-void doDS(){
+static void doDS(){
   if (connectSol) {
     for (int i=0 ; i < 4 ; i++) {
       if (sol.query(DVS)) {				// request Device status       
