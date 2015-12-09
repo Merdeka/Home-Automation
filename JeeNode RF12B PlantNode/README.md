@@ -1,4 +1,4 @@
-Plant Node:
+# Plant Node
 
 This Node reads and send infromation from it's sensors using a RF12B at 868MHz.
 

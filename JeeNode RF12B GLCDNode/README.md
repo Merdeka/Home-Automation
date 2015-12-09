@@ -1,4 +1,4 @@
-Graphical LCD Node:
+# Graphical LCD Node
 
 This Node displays information.
 - Power Used

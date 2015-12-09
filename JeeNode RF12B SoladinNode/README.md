@@ -1,4 +1,4 @@
-Soladin Node:
+# Soladin Node
 
 This Node connects to a Soldin 600 Solar Grid Tie Inverter.
 It reads out the Soladin over a SoftwareSerial connection and send the information using a RF12B at 868MHz.
