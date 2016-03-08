@@ -1,4 +1,4 @@
-# ESP8266 LightSensor
+# ESP8266 Light Sensor
 
 This Node sends sensor information to a MQTT Topic
 - It reads a TSL256 Light sensor
