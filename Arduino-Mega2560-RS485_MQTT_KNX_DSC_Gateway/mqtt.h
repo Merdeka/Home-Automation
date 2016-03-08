@@ -21,6 +21,7 @@ void sendStatus() {
   sensorJson[F("Current")]      = sensors.current;
   sensorJson[F("IP")]           = displayIP(Ethernet.localIP());
   sensorJson[F("FreeRam")]      = freeRam();
+  sensorJson[F("Looptime")]     = (float) sensors.looptime / 1000;
   sensorJson[F("Uptime")]       = getUptime();
   
   JsonObject& protocols = sensorJson.createNestedObject("Protocols");

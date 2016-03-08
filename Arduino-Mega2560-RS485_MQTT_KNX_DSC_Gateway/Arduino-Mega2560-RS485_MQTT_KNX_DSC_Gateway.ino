@@ -38,6 +38,7 @@ void loop() {
   
                          wdt_reset();      // the program is alive...for now. 
                          uptime();         // Runs the uptime routine and reenters the main loop
+                         loopTimer();      // To Measure the loop time 
                          webServerTask();  // EtherNet WebServer Loop
   if( interfaces.RS485 ) rs485.process();  // RS485 Loop
   if( interfaces.DSC )   dscTask();        // DSC Alarm Loop

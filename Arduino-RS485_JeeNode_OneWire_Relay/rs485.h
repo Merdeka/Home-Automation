@@ -1,9 +1,13 @@
+#include <AltSoftSerial.h>
+#include <ICSCAltSoftSerial.h>
+
 unsigned char NodeID  = 30; //Node ID 30 on RS485 Network
 const int DEPin       = 5;
 const long Baud       = 57600;
 
 AltSoftSerial RS485;
 
+// Setup RS485
 void setupRS485() {
 
     #ifdef DEBUG

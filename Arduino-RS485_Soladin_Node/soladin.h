@@ -1,7 +1,29 @@
+#include <Soladin.h>
+
 Soladin sol;                  // copy of soladin class
 bool connectSol = 0 ;         // if soladin responds
 
 SoftwareSerial solcom(14, 4); // serial to conect to soladin1 (AIO1 TX, DIO1 RX)
+
+void doFW(){
+  if (connectSol)  {              // already connected
+    for (int i=0 ; i < 4 ; i++) {     // give me some time to return by hand
+      if (sol.query(FWI)) {       // request firware information
+        break; 
+      } 
+    }
+  }
+}
+
+void doDS(){
+  if (connectSol) {
+    for (int i=0 ; i < 4 ; i++) {
+      if (sol.query(DVS)) {       // request Device status       
+        break;
+      }
+    } 
+  }
+}
 
 void doSoladinMeasure(){
   
@@ -51,25 +73,5 @@ void doSoladinMeasure(){
         break;
       }
     }
-  }
-}
-
-void doFW(){
-  if (connectSol)  {              // already connected
-    for (int i=0 ; i < 4 ; i++) {     // give me some time to return by hand
-      if (sol.query(FWI)) {       // request firware information
-        break; 
-      } 
-    }
-  }
-}
-
-void doDS(){
-  if (connectSol) {
-    for (int i=0 ; i < 4 ; i++) {
-      if (sol.query(DVS)) {       // request Device status       
-        break;
-      }
-    } 
   }
 }

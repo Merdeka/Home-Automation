@@ -105,6 +105,7 @@ void getjSonState(EthernetClient cl)
   webJson[F("Humidity")]     = sensors.humidity;
   webJson[F("Barometer")]    = (float) sensors.barometer / 100;
   webJson[F("FreeRam")]      = freeRam();
+  webJson[F("Looptime")]     = (float) sensors.looptime / 1000;
   webJson[F("Uptime")]       = getUptime();
 
   JsonObject& protocols = webJson.createNestedObject("Protocols");

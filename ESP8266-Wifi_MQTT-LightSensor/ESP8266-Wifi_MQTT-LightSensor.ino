@@ -40,6 +40,7 @@ void loop() {
     
   wdt_reset();  // the program is alive...for now.
   uptime();     // Runs the uptime routine and reenters the main loop
+  loopTimer();  // To Measure the loop time 
   wifiTask();   // Wifi Loop
   mqttTask();   // MQTT Loop
 

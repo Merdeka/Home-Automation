@@ -1,5 +1,5 @@
 // Just Some basic Definitions used for the Up Time Logger
-long    uptimeDay = 0;
+unsigned long    uptimeDay = 0;
 uint8_t uptimeHour, uptimeMinute, uptimeSecond, uptimeSecondStamp, uptimeOnce = 0;
 
 //************************ Uptime Code - Makes a count of the total up time since last start ****************//
@@ -70,9 +70,20 @@ String makeUptime(long upDay, uint8_t upHour, uint8_t upMinute, uint8_t upSecond
   return uptime;
 }
 
-//****************************SRam check**************************************//
+// SRam check
 uint16_t freeRam() {
   extern int __heap_start, *__brkval; 
   int v; 
   return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
+}
+
+// Time the Loop in microsecond
+void loopTimer() {
+  static unsigned long thisMicros = 0;
+  static unsigned long lastMicros = 0;
+
+  lastMicros = thisMicros;
+  thisMicros = micros();
+
+  sensors.looptime = thisMicros - lastMicros; // looptime in microseconds | ms = / 1000
 }

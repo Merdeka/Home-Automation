@@ -39,20 +39,33 @@ void uptime(){
 };
 
 String getUptime() {
-  
-  char* uptimeTime = "00:00:00";
-  sprintf(uptimeTime,"%02dh %02dm %02ds", uptimeHour, uptimeMinute, uptimeSecond);
 
-  String uptime = (String) uptimeDay;
-  uptime += F("d ");
-  uptime += (String) uptimeTime;
+  String  uptime =  (String) uptimeDay;
+          uptime += "d ";
+          uptime += (String) uptimeHour;
+          uptime += "h ";
+          uptime += (String) uptimeMinute;
+          uptime += "m ";
+          uptime += (String) uptimeSecond;
+          uptime += "s";
 
   return uptime;
 }
 
-//****************************SRam check**************************************//
+// SRam check
 uint16_t freeRam() {
   extern int __heap_start, *__brkval; 
   int v; 
   return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
+}
+
+// Time the Loop in microsecond
+void loopTimer() {
+  static unsigned long thisMicros = 0;
+  static unsigned long lastMicros = 0;
+
+  lastMicros = thisMicros;
+  thisMicros = micros();
+
+  oneWireNode.looptime = thisMicros - lastMicros; // looptime in microseconds | ms = / 1000
 }

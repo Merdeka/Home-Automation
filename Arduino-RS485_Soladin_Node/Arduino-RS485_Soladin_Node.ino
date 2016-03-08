@@ -1,20 +1,28 @@
 // RS485 Soladin Node, talks to Soladin 600 Inverter
 
+// Just Some basic Definitions used for the Up Time Logger
+unsigned long    uptimeDay = 0;
+uint8_t uptimeHour, uptimeMinute, uptimeSecond, uptimeSecondStamp, uptimeOnce = 0;
+
 #include <avr/pgmspace.h>
 #include <avr/wdt.h>
-#include <Soladin.h>
-#include <SoftwareSerial.h>
-#include <ICSCSoftware.h>
-#include "DHT.h"
 #include "TypeDefsSariwating.h"
 
-// TypeDefs
+// Setup TypeDefs
 payloadSoladin soladin;
 payloadSoladinNode soladinNode;
 
-// Just Some basic Definitions used for the Up Time Logger
-long    uptimeDay = 0;
-uint8_t uptimeHour, uptimeMinute, uptimeSecond, uptimeSecondStamp, uptimeOnce = 0;
+// Predefine functions
+uint16_t freeRam();
+String getUptime();
+
+#include "rs485.h"
+#include "soladin.h"
+#include "sensors.h"
+#include "systemdiag.h"
+
+#define DEBUG
+//#define SERIAL
 
 unsigned long fast_update, slow_update;
 
@@ -23,8 +31,11 @@ unsigned long fast_update, slow_update;
 //--------------------------------------------------------------------------------------------
 void setup() {
 
-  Serial.begin(57600);
-  Serial.println(F("RS485 Soladin Node."));
+  // Serial Port
+  #ifdef DEBUG
+      Serial.begin(57600);
+    Serial.println(F("RS485 Soladin Node."));
+  #endif
   
   setupRS485();   // RS485
   setupSensors(); // DHT11
@@ -44,10 +55,10 @@ void setup() {
 //--------------------------------------------------------------------------------------------
 void loop() {
 
-  wdt_reset();    // the program is alive...for now.
-  uptime();       // Runs the uptime routine and reenters the main loop
-
-  ICSC.process(); // RS485
+    wdt_reset();      // the program is alive...for now. 
+    uptime();         // Runs the uptime routine and reenters the main loop
+    loopTimer();      // To Measure the loop time 
+    ICSC.process();   // RS485 Loop
 
   //-------------------------------------------------------------------------------------------
   // Timed Code

@@ -100,6 +100,7 @@ void sendStatus() {
   nodeJson[F("ChipSpeed")]      = ESP.getCpuFreqMHz();
   nodeJson[F("FlashChipID")]    = getFlashChipId();
   nodeJson[F("FreeRam")]        = ESP.getFreeHeap();
+  nodeJson[F("Looptime")]       = (float) sensorData.looptime / 1000;
   nodeJson[F("Uptime")]         = getUptime();
    
   #ifdef DEBUG

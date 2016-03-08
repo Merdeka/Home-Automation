@@ -50,3 +50,14 @@ String getUptime() {
 
   return (String) uptime;
 }
+
+// Time the Loop in microsecond
+void loopTimer() {
+  static unsigned long thisMicros = 0;
+  static unsigned long lastMicros = 0;
+
+  lastMicros = thisMicros;
+  thisMicros = micros();
+
+  sensorData.looptime = thisMicros - lastMicros; // looptime in microseconds | ms = / 1000
+}

@@ -16,7 +16,7 @@
 #include "TypeDefsSariwating.h"
 #include <ArduinoJson.h>
 
-// TypeDefs
+// Setup TypeDefs
 typedef struct {  // debug | also used to read/store EEPROM
   bool  MAIN;
   bool  ETH;
@@ -44,7 +44,8 @@ typedef struct {  // Local Sensors
   uint16_t      humidity;
   float         barometer;
   float         voltage;
-  float         current;    
+  float         current;
+  unsigned long looptime; 
 }localSensors;
 localSensors sensors;
 

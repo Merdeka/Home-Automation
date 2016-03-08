@@ -1,11 +1,13 @@
 #define DEBUG
 
+// Setup TypeDefs
 typedef struct { // Sensor Data
-    uint16_t  lightSensor;
-    uint16_t  temperature;
-    uint16_t  humidity;
-    uint32_t  ChipId;
-    uint32_t  FlashChipId;
+    uint16_t      lightSensor;
+    uint16_t      temperature;
+    uint16_t      humidity;
+    unsigned long looptime;
+    uint32_t      ChipId;
+    uint32_t      FlashChipId;
 } SENSORDATA;
 SENSORDATA sensorData;
 

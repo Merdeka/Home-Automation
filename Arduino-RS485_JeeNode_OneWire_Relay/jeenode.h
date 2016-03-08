@@ -1,3 +1,5 @@
+#include <JeeLib.h>
+
 #define MYNODE  30            //Should be unique on network, node ID 30 reserved for base station
 #define FREQ    RF12_868MHZ   //frequency - match to same frequency as RFM12B module (change to 868Mhz or 915Mhz if appropriate)
 #define GROUP   30            //network group, must be same as emonTx and emonBase

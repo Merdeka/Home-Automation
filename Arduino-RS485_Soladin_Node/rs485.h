@@ -1,13 +1,11 @@
+#include <SoftwareSerial.h>
+#include <ICSCSoftware.h>
+
 const unsigned char NodeID  = 33; //Node ID 33 on RS485 Network
 const uint8_t DEPin         = 16;
 const long Baud             = 57600;
 
 SoftwareSerial rs485(6, 5); // RX, TX
-
-void setupRS485() {
-    Serial.println(F("Starting RS485"));
-    ICSC.begin(NodeID, Baud, &rs485, DEPin);
-}
 
 void sendSoladinReport() {
   
@@ -33,16 +31,23 @@ void sendNodeReport() {
     char buffer[sizeof soladinNode];
     memcpy(buffer, &soladinNode, sizeof soladinNode);   
     ICSC.broadcast(char(0x24), sizeof(soladinNode), buffer);
-   
-    Serial.println(F("Sending Node Report"));
-    Serial.print(F("Uptime: "));
-    Serial.print(getUptime());
-    Serial.print(F(" Free Ram: "));
-    Serial.println(freeRam());
+
+    #ifdef DEBUG
+      Serial.println(F("Sending Node Report"));
+      Serial.print(F("Uptime: "));
+      Serial.print(getUptime());
+      Serial.print(F(" Free Ram: "));
+      Serial.println(freeRam());
+    #endif
     
     #if SERIAL
         SPrintDS();
         serialFlush();
     #endif
+}
+
+void setupRS485() {
+    Serial.println(F("Starting RS485"));
+    ICSC.begin(NodeID, Baud, &rs485, DEPin);
 }
 

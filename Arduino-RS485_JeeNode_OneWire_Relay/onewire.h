@@ -1,3 +1,6 @@
+#include <OneWire.h>
+#include <DallasTemperature.h>
+
 // Data wire is plugged into port Analog 0 on the Arduino
 #define ONE_WIRE_BUS 14
 #define TEMPERATURE_PRECISION 9
@@ -11,6 +14,57 @@ DeviceAddress tempDeviceAddress; // We'll use this variable to store a found dev
 
 uint8_t numberOfDevices; // Number of temperature devices found
 
+void sendOneWireReport() {
+
+    // Store the Local Node Temperature
+    char* address = "00:00:00:00:00:00:00:00";
+    sprintf(address,"%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x", oneWire.address0, oneWire.address1, oneWire.address2, oneWire.address3, oneWire.address4, oneWire.address5, oneWire.address6, oneWire.address7);
+
+    const char* OneWireJeeNode  PROGMEM = "10:5f:eb:ed:00:08:00:f9";
+
+    if( (String) address == (String) OneWireJeeNode ) { // OneWire JeeNode Gateway Temp
+      oneWireNode.Temp = oneWire.temperature;
+    }
+
+    // Send the Report
+    char buffer[sizeof oneWire];
+    memcpy(buffer, &oneWire, sizeof oneWire);
+    
+    ICSC.broadcast(char(0x31), sizeof(buffer), buffer);
+    
+    #if SERIAL
+        SPrintDS();
+        serialFlush();
+    #endif
+}
+
+void sendSensorsReport() {
+
+    oneWireNode.uptimeDay    = uptimeDay;
+    oneWireNode.uptimeHour   = uptimeHour;
+    oneWireNode.uptimeMinute = uptimeMinute;
+    oneWireNode.uptimeSecond = uptimeSecond;
+    oneWireNode.freeRam      = freeRam();
+  
+    char buffer[sizeof oneWireNode];
+    memcpy(buffer, &oneWireNode, sizeof oneWireNode);   
+    ICSC.broadcast(char(0x32), sizeof(oneWireNode), buffer);
+
+    #ifdef ONEWIRE_DEBUG
+      Serial.println(F("Sending Sensors Report"));
+      Serial.print(F("Temperature: "));
+      Serial.print((float) oneWireNode.Temp / 100);
+      Serial.print(F(" Uptime: "));
+      Serial.print(getUptime());
+      Serial.print(F(" Free Ram: "));
+      Serial.println(freeRam());
+    #endif
+    
+    #if SERIAL
+        SPrintDS();
+        serialFlush();
+    #endif
+}
 
 void setupOnewire() {
   
@@ -76,56 +130,4 @@ void onewireTask() {
 
       sendOneWireReport();
     }
-}
-
-void sendOneWireReport() {
-
-    // Store the Local Node Temperature
-    char* address = "00:00:00:00:00:00:00:00";
-    sprintf(address,"%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x", oneWire.address0, oneWire.address1, oneWire.address2, oneWire.address3, oneWire.address4, oneWire.address5, oneWire.address6, oneWire.address7);
-
-    const char* OneWireJeeNode  PROGMEM = "10:5f:eb:ed:00:08:00:f9";
-
-    if( (String) address == (String) OneWireJeeNode ) { // OneWire JeeNode Gateway Temp
-      oneWireNode.Temp = oneWire.temperature;
-    }
-
-    // Send the Report
-    char buffer[sizeof oneWire];
-    memcpy(buffer, &oneWire, sizeof oneWire);
-    
-    ICSC.broadcast(char(0x31), sizeof(buffer), buffer);
-    
-    #if SERIAL
-        SPrintDS();
-        serialFlush();
-    #endif
-}
-
-void sendSensorsReport() {
-
-    oneWireNode.uptimeDay    = uptimeDay;
-    oneWireNode.uptimeHour   = uptimeHour;
-    oneWireNode.uptimeMinute = uptimeMinute;
-    oneWireNode.uptimeSecond = uptimeSecond;
-    oneWireNode.freeRam      = freeRam();
-  
-    char buffer[sizeof oneWireNode];
-    memcpy(buffer, &oneWireNode, sizeof oneWireNode);   
-    ICSC.broadcast(char(0x32), sizeof(oneWireNode), buffer);
-
-    #ifdef ONEWIRE_DEBUG
-      Serial.println(F("Sending Sensors Report"));
-      Serial.print(F("Temperature: "));
-      Serial.print((float) oneWireNode.Temp / 100);
-      Serial.print(F(" Uptime: "));
-      Serial.print(getUptime());
-      Serial.print(F(" Free Ram: "));
-      Serial.println(freeRam());
-    #endif
-    
-    #if SERIAL
-        SPrintDS();
-        serialFlush();
-    #endif
 }
