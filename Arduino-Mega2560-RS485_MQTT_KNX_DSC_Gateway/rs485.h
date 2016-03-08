@@ -2,6 +2,8 @@
 
 ICSC rs485(Serial3, 40, 2); // Serial port, NodeID, DE Pin
 
+#define BUSRELAY 8
+
 void powerCallBack(unsigned char src, char command, unsigned char len, char *data) {
   
   power = *(payloadEmonTX*) data;
@@ -54,6 +56,7 @@ void soladinNodeCallBack(unsigned char src, char command, unsigned char len, cha
   soladinNodeJson[F("Temperature")] = (float) soladinNode.Temp / 100;
   soladinNodeJson[F("Humidity")]    = (float) soladinNode.Humidity / 100;
   soladinNodeJson[F("FreeRam")]     = soladinNode.freeRam;
+  soladinNodeJson[F("Looptime")]    = soladinNode.looptime;
   soladinNodeJson[F("Uptime")]      = makeUptime(soladinNode.uptimeDay, soladinNode.uptimeHour, soladinNode.uptimeMinute, soladinNode.uptimeSecond);
   
   if( debug.SOLADIN) { soladinNodeJson.prettyPrintTo(Serial); }
@@ -83,6 +86,7 @@ void plantNodeCallBack(unsigned char src, char command, unsigned char len, char 
 
   plantNodeCpuJson[F("Timestamp")]  = getTimeStamp(); 
   plantNodeCpuJson[F("FreeRam")]    = plantNode.freeRam;
+  plantNodeCpuJson[F("Looptime")]   = plantNode.looptime;
   plantNodeCpuJson[F("Uptime")]     = makeUptime(plantNode.uptimeDay, plantNode.uptimeHour, plantNode.uptimeMinute, plantNode.uptimeSecond);
 
   if( debug.PLANTNODE ) { plantNodeCpuJson.prettyPrintTo(Serial); }
@@ -129,6 +133,7 @@ void oneWireNodeCallBack(unsigned char src, char command, unsigned char len, cha
     oneWireNodeJson[F("Timestamp")]   = getTimeStamp(); 
     oneWireNodeJson[F("Temperature")] = (float) oneWireNode.Temp / 100;
     oneWireNodeJson[F("FreeRam")]     = oneWireNode.freeRam;
+    oneWireNodeJson[F("Looptime")]    = oneWireNode.looptime;
     oneWireNodeJson[F("Uptime")]      = makeUptime(oneWireNode.uptimeDay, oneWireNode.uptimeHour, oneWireNode.uptimeMinute, oneWireNode.uptimeSecond);
      
     if( debug.ONEWIRE ) { oneWireNodeJson.prettyPrintTo(Serial); }
@@ -137,8 +142,11 @@ void oneWireNodeCallBack(unsigned char src, char command, unsigned char len, cha
 }
 
 void setupRS485() {
+
+  pinMode(BUSRELAY, OUTPUT);
+  digitalWrite(BUSRELAY, interfaces.RS485BUS );
   
-  Serial3.begin(57600);
+  Serial3.begin(57600); 
   
   rs485.begin();
 
@@ -169,5 +177,13 @@ void disableRS485() {
   
   interfaces.RS485 = false;
   stopRS485();
+}
+
+void switchRS485Bus(bool value) {
+
+  interfaces.RS485BUS = value;
+  saveInterfaces();
+  
+  digitalWrite( BUSRELAY, interfaces.RS485BUS );
 }
 

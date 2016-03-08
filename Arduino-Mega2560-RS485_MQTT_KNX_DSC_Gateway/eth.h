@@ -100,12 +100,11 @@ void getjSonState(EthernetClient cl)
   DynamicJsonBuffer  webBuffer;
   JsonObject& webJson = webBuffer.createObject();
 
-  webJson[F("Timestamp")]    = getTimeStamp(); 
   webJson[F("Temperature")]  = (float) sensors.temperature / 100;
   webJson[F("Humidity")]     = sensors.humidity;
   webJson[F("Barometer")]    = (float) sensors.barometer / 100;
   webJson[F("FreeRam")]      = freeRam();
-  webJson[F("Looptime")]     = (float) sensors.looptime / 1000;
+  webJson[F("Looptime")]     = sensors.looptime;
   webJson[F("Uptime")]       = getUptime();
 
   JsonObject& protocols = webJson.createNestedObject("Protocols");
@@ -125,6 +124,9 @@ void getjSonState(EthernetClient cl)
   debugs[F("POWER")]         = debug.POWER;
   debugs[F("PLANTNODE")]     = debug.PLANTNODE;
   debugs[F("SENSORS")]       = debug.LOCALSENSORS;
+
+  JsonObject& io = webJson.createNestedObject("IO");
+  io[F("RS485BUS")]          = interfaces.RS485BUS;
    
   if( debug.ETH ) { webJson.prettyPrintTo(Serial); }
      
@@ -238,7 +240,16 @@ void webServerTask() {
                       disableDSC();
                       saveInterfaces();
                     }
-                    
+
+                    // Relay
+                    else if (StrContains(HTTP_req, "/?sw_rs_bus=1")) {
+                      switchRS485Bus(true);
+                    }
+
+                    else if (StrContains(HTTP_req, "/?sw_rs_bus=0")) {
+                      switchRS485Bus(false);
+                    }
+                                
                     // Debug Commands
                     else if (StrContains(HTTP_req, "/?db_main=1")) {
                       debug.MAIN = true;

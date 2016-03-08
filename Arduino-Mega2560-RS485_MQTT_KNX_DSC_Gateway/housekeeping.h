@@ -1,5 +1,5 @@
 #define DEBUG
-#define ETH_DEBUG
+//#define ETH_DEBUG
 //#define MQTT_DEBUG
 //#define KNX_DEBUG
 //#define DSC_DEBUG
@@ -35,6 +35,7 @@ Debugs debug;
 typedef struct {  // Interfaces | also used to read/store EEPROM
   bool  KNX;
   bool  RS485;
+  bool  RS485BUS;
   bool  DSC;
 }Interfaces;
 Interfaces interfaces;
@@ -57,17 +58,17 @@ payloadEmonTX power;
 PayloadPlantNode plantNode;
 
 // Functions prototypes
-void sendKNXTime();
-void sendKNXDate();
-void sendMQTT(const char* topic, JsonObject& sendJson);
-void enableKNX();
-void disableKNX();
-void enableRS485();
-void disableRS485();
-void enableDSC();
-void disableDSC();
-uint16_t freeRam();
-String getTimeStamp();
+void      sendKNXTime();
+void      sendKNXDate();
+void      sendMQTT(const char* topic, JsonObject& sendJson);
+void      enableKNX();
+void      disableKNX();
+void      enableRS485();
+void      disableRS485();
+void      enableDSC();
+void      disableDSC();
+uint16_t  freeRam();
+void      switchRS485Bus(bool value);
 
 #include "eeprom_memory.h"
 #include "eth.h"

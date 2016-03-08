@@ -4,93 +4,55 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>MQTT Gateway | Status</title>
+    <title>ESP8266 | Status</title>
 
     <script>
-        function getJson()
-        {
-            nocache = "&nocache=" + Math.random() * 1000000;
-            var request = new XMLHttpRequest();
-            request.onreadystatechange = function()
-            {
-                if (this.readyState == 4) {
-                    if (this.status == 200) {
-                        if (this.responseText != null) {
-                            
-                            var data = JSON.parse(this.responseText);
-                            console.log(this.responseText);
+        // Open WebSocket to Server
+        var reconnectInterval = 30000; // 30 Seconds
+        var wSocket;
 
-                            document.getElementById('uptime_txt').innerHTML = data.Uptime;
-                            document.getElementById('temperature_txt').innerHTML = data.Temperature.toFixed(2) + "\u2103";
-                            document.getElementById('humidity_txt').innerHTML = data.Humidity + " %";
-                            document.getElementById('barometer_txt').innerHTML = data.Barometer.toFixed(1) + " mbar";
-                            document.getElementById('freeram_txt').innerHTML = data.FreeRam.toLocaleString() + " bytes";
+        var connect = function() {
+            wSocket = new WebSocket("ws://" + window.location.hostname + ":81");
+            console.log(window.location.hostname);
 
-                            // Protocols
-                            document.getElementById("sw_knx").checked = data.Protocols.KNX;
-                            document.getElementById('sw_rs').checked = data.Protocols.RS485;
-                            document.getElementById('sw_dsc').checked = data.Protocols.DSC;
-                            
-                            var sKNX = "KNX ";
-                            if (data.Protocols.KNX === true) {sKNX += "Enabled";} else if (data.Protocols.KNX === false) {sKNX += "Disabled";}
-                            document.getElementById("sw_knx_text").innerHTML = sKNX;
+            wSocket.onopen=  function() {
+              console.log('websocket open');
+            };
 
-                            var sRS = "RS485 ";
-                            if (data.Protocols.RS485 === true) {sRS += "Enabled";} else if (data.Protocols.RS485 === false) {sRS += "Disabled";}
-                            document.getElementById("sw_rs_text").innerHTML = sRS;
+            wSocket.onerror=  function() {
+              console.log('trying to reconnect');
+              setTimeout(connect, reconnectInterval);
+            };
 
-                            var sDSC = "DSC ";
-                            if (data.Protocols.DSC === true) {sDSC += "Enabled";} else if (data.Protocols.DSC === false) {sDSC += "Disabled";}
-                            document.getElementById("sw_dsc_text").innerHTML = sDSC;
-                            
-                            // IO
-                            document.getElementById('sw_rs_bus').checked = data.IO.RS485BUS;
-                            
-                            var RSIO = "Buspower ";
-                            if (data.IO.RS485BUS === true) {RSIO += "Enabled";} else if (data.IO.RS485BUS === false) {RSIO += "Disabled";}
-                            document.getElementById("sw_rs_bus_text").innerHTML = RSIO;                            
+            wSocket.onclose=  function() {
+              console.log('trying to reconnect');
+              setTimeout(connect, reconnectInterval);
+            };
 
-                            // Debug
-                            document.getElementById("db_main").checked = data.Debug.MAIN;
-                            document.getElementById("db_eth").checked = data.Debug.ETH;
-                            document.getElementById("db_mqtt").checked = data.Debug.MQTT;
-                            document.getElementById("db_knx").checked = data.Debug.KNX;
-                            document.getElementById("db_dsc").checked = data.Debug.DSC;
-                            document.getElementById("db_rs").checked = data.Debug.RS485;
-                            document.getElementById("db_soladin").checked = data.Debug.SOLADIN;
-                            document.getElementById("db_onewire").checked = data.Debug.ONEWIRE;
-                            document.getElementById("db_power").checked = data.Debug.POWER;
-                            document.getElementById("db_plant").checked = data.Debug.PLANTNODE;
-                            document.getElementById("db_lcl_sn").checked = data.Debug.SENSORS;
+            wSocket.onmessage = function (msg) {
+                var data = JSON.parse(msg.data);
+                console.log(msg);
 
-                            var dMAIN = "Debug ";
-                            if (data.Debug.MAIN === true) {dMAIN += "Enabled";} else if (data.Debug.MAIN === false) {dMAIN += "Disabled";}
-                            document.getElementById("db_main_text").innerHTML = dMAIN;
+                document.getElementById('uptime_txt').innerHTML = data.Uptime;
+                document.getElementById('vcc_txt').innerHTML = data.VCC.toFixed(2) + " volt";
+                document.getElementById('freeram_txt').innerHTML = data.FreeRam.toLocaleString() + " bytes";                        
+/*
+                // Debug
+                document.getElementById("db_main").checked = data.Debug.MAIN;
+                document.getElementById("db_mqtt").checked = data.Debug.MQTT;
+                document.getElementById("db_lcl_sn").checked = data.Debug.SENSORS;
 
-                            var dKNX = "KNX Debug ";
-                            if (data.Debug.KNX === true) {dKNX += "Enabled";} else if (data.Debug.KNX === false) {dKNX += "Disabled";}
-                            document.getElementById("db_knx_text").innerHTML = dKNX;
+                var dMAIN = "Debug ";
+                if (data.Debug.MAIN === true) {dMAIN += "Enabled";} else if (data.Debug.MAIN === false) {dMAIN += "Disabled";}
+                document.getElementById("db_main_text").innerHTML = dMAIN;
+*/
+                // Loop Time
+                var lt = data.Looptime / 1000;
+                document.getElementById("looptime_text").innerHTML = lt.toFixed(3) + " ms";    
+            };
 
-                            var dRS = "RS485 Debug ";
-                            if (data.Debug.RS485 === true) {dRS += "Enabled";} else if (data.Debug.RS485 === false) {dRS += "Disabled";}
-                            document.getElementById("db_rs_text").innerHTML = dRS;
-
-                            var dDSC = "DSC Debug ";
-                            if (data.DebugDSC === true) {dDSC += "Enabled";} else if (data.Debug.DSC === false) {dDSC += "Disabled";}
-                            document.getElementById("db_dsc_text").innerHTML = dDSC;
-
-                            // Loop Time
-                            var lt = data.Looptime / 1000;
-                            document.getElementById("looptime_text").innerHTML = lt.toFixed(3) + " ms";
-
-                        }
-                    }
-                }
-            }
-            request.open("GET", "json_get" + nocache, true);
-            request.send(null);
-            setTimeout('getJson()', 1000);
-        }
+        };
+        connect();
 
         // Update Clock
         function startTime()
@@ -102,7 +64,7 @@
             h = twoDigits(h);
             m = twoDigits(m);
             s = twoDigits(s);
-            document.getElementById('header-clock').innerHTML = "MQTT Gateway | Status | " +h+":"+m+":"+s;
+            document.getElementById('header-clock').innerHTML = "ESP8266 | Status | " +h+":"+m+":"+s;
             var t = setTimeout(function(){startTime()},500);
         }
 
@@ -110,24 +72,6 @@
         function twoDigits(number) {
             return number < 10 ? '0' + number : number;
         } 
-
-        // Send Protocol Switches
-        function updateProtocol( element ) {
-
-            var myRequest = new XMLHttpRequest();
-
-            var iValue;
-            if(element.checked === true ){
-                iValue = 1;
-            } else if (element.checked === false) {
-                iValue = 0;
-            }
-
-            var data = "?"+element.id+"="+iValue;
-
-            myRequest.open("GET", data, true);
-            myRequest.send(null);
-        }
 
         // Send Debug Switches
         function updateDebug( element ) {
@@ -152,7 +96,6 @@
         // Startup Script
         function startup(){
             startTime();
-            getJson();
         }
     </script>
 
@@ -589,7 +532,7 @@
 
 <div class="header">
     <div  class="home-menu pure-menu pure-menu-horizontal pure-menu-fixed">
-        <a style="padding: 12px 0 0 12px ; font-size: 130%;" class ="pure-menu-heading"  id ="header-clock">MQTT Gateway | Status</a>
+        <a style="padding: 12px 0 0 12px ; font-size: 130%;" class ="pure-menu-heading"  id ="header-clock">ESP8266 | Status</a>
         <img style="float: left;" alt="OpenSource Logo" width="50" src="oslogo.png">
     </div>
 </div>
@@ -605,7 +548,7 @@
 
 <div class="content-wrapper ">
     <div class="content">
-        <h2 class="content-head is-center">Sensors | KNX | RS485 | DSC Security</h2>
+        <h2 class="content-head is-center">ESP8266</h2>
 
         <div class="pure-g">
             <div class="l-box pure-u-1 pure-u-md-1-2 pure-u-lg-1-4">
@@ -616,25 +559,9 @@
                 </h3>
                 <p>
                     <table style="width:80%">
-                      <tr>
-                        <td><i class="fa-fw wi wi-thermometer"></i> Temperature</td>
-                        <td><div id="temperature_txt"><i class="fa fa-refresh fa-spin"></i></div></td>
-                      </tr>
-                      <tr>
-                        <td><i class="fa-fw wi wi-humidity"></i> Humidity</td>
-                        <td><div id="humidity_txt"><i class="fa fa-refresh fa-spin"></i></div></td>
-                      </tr>
-                      <tr>
-                        <td><i class="fa-fw wi wi-barometer"></i> Barometer</td>
-                        <td><div id="barometer_txt"><i class="fa fa-refresh fa-spin"></i></div></td>
-                      </tr>
                        <tr>
-                        <td><i class="fa-fw fa fa-plug"></i> Voltage</td>
-                        <td><div id="voltage_txt"><i class="fa fa-refresh fa-spin"></i></div></td>
-                      </tr>
-                      <tr>
-                        <td><i class="fa-fw fa fa-bolt"></i> Current</td>
-                        <td><div id="current_txt"><i class="fa fa-refresh fa-spin"></i></div></td>
+                        <td><i class="fa-fw fa fa-plug"></i> VCC</td>
+                        <td><div id="vcc_txt"><i class="fa fa-refresh fa-spin"></i></div></td>
                       </tr>
                        <tr>
                         <td><i class="fa-fw fa fa-server"></i> FreeRam</td>
@@ -648,7 +575,7 @@
             <div class="l-box pure-u-1 pure-u-md-1-2 pure-u-lg-1-4">
                 <h3 class="content-subhead">
                     <i class="fa fa-commenting"></i>
-                    Gateway
+                    ESP8266
                 </h3>
                 <p>
                     <table style="width:90%">
@@ -677,156 +604,16 @@
                         <tr style="font-size:small;">
                             <td>
                                 
-                                    <input type="checkbox" name="debug" value="ethernet" id="db_eth" onchange="updateDebug(this)"/> EtherNet<br>
                                     <input type="checkbox" name="debug" value="mqtt" id="db_mqtt" onchange="updateDebug(this)"/> MQTT
                             </td>
                             <td>
                                 
-                                    <input type="checkbox" name="debug" value="sensors" id="db_lcl_sn" onchange="updateDebug(this)"/> Sensors<br>
+                                    <input type="checkbox" name="debug" value="sensors" id="db_lcl_sn" onchange="updateDebug(this)"/> Sensors
                                     <br>
                             </td>
                         </tr>
 
                     </table>
-                </p>
-            </div>
-
-            <div class="l-box pure-u-1 pure-u-md-1-2 pure-u-lg-1-4">
-                <h3 class="content-subhead">
-                    <i class="fa fa-industry"></i>
-                    RS485
-                </h3>
-                <p>
-                    <table style="width:90%">
-
-                        <tr>
-                            <td>
-                                <div class="onoffswitch">
-                                    <input type="checkbox" class="onoffswitch-checkbox" value="check" id="sw_rs" onchange="updateProtocol(this)"/>
-                                    <label class="onoffswitch-label" for="sw_rs"></label>
-                                </div>
-                            </td>
-                            <td>
-                                <div id ="sw_rs_text">RS485 Status</div>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td>
-                                <div class="onoffswitch">
-                                    <input type="checkbox" class="onoffswitch-checkbox" value="check" id="db_rs" onchange="updateDebug(this)"/>
-                                    <label class="onoffswitch-label" for="db_rs"></label>
-                                </div>
-                            </td>
-                            <td>
-                                <div id ="db_rs_text">RS485 Debug</div>
-                            </td>
-                        </tr>
-
-                        <tr style="font-size:small;">
-                            <td>
-                                
-                                    <input type="checkbox" name="debug" value="onewire" id="db_onewire" onchange="updateDebug(this)"/> OneWire<br>
-                                    <input type="checkbox" name="debug" value="plantnode" id="db_plant" onchange="updateDebug(this)"/> PlantNode
-                            </td>
-                            <td>
-                                
-                                    <input type="checkbox" name="debug" value="soladin" id="db_soladin" onchange="updateDebug(this)"/> Soladin<br>
-                                    <input type="checkbox" name="debug" value="gridpower" id="db_power" onchange="updateDebug(this)"/> Grid Power
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td><br>
-                                <div class="onoffswitch">
-                                    <input type="checkbox" class="onoffswitch-checkbox" value="check" id="sw_rs_bus" onchange="updateProtocol(this)"/>
-                                    <label class="onoffswitch-label" for="sw_rs_bus"onchange="updateProtocol(this)"/></label>
-                                </div>
-                            </td>
-                            <td><br>
-                                <div id ="sw_rs_bus_text">RS485 Buspower</div>
-                            </td>
-                        </tr>
-
-                    </table>
-                </p>
-            </div>
-
-            <div class="l-box pure-u-1 pure-u-md-1-2 pure-u-lg-1-4">
-                <h3 class="content-subhead">
-                    <i class="fa fa-home"></i>
-                    KNX
-                </h3>
-                <p>
-                    <table style="width:90%">
-
-                        <tr>
-                            <td>
-                                <div class="onoffswitch">
-                                    <input type="checkbox" class="onoffswitch-checkbox" value="check" id="sw_knx" onchange="updateProtocol(this)"/>
-                                    <label class="onoffswitch-label" for="sw_knx"></label>
-                                </div>
-                            </td>
-                            <td>
-                                <div id ="sw_knx_text">KNX Status</div>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td>
-                                <div class="onoffswitch">
-                                    <input type="checkbox" class="onoffswitch-checkbox" value="check" id="db_knx" onchange="updateDebug(this)"/>
-                                    <label class="onoffswitch-label" for="db_knx"></label>
-                                </div>
-                            </td>
-                            <td>
-                                <div id ="db_knx_text">KNX Debug</div>
-                            </td>
-                        </tr>
-                        
-                    </table>
-                    <br>
-                    <!-- Phasellus eget enim eu lectus faucibus vestibulum. Suspendisse sodales pellentesque elementum. -->
-                </p>
-            </div>
-
-
-            <div class="l-box pure-u-1 pure-u-md-1-2 pure-u-lg-1-4">
-                <h3 class="content-subhead">
-                    <i class="fa fa-unlock-alt"></i>
-                    DSC Security
-                </h3>
-                <p>
-                    <table style="width:90%">
-
-                        <tr>
-                            <td>
-                                <div class="onoffswitch">
-                                    <input type="checkbox" class="onoffswitch-checkbox" value="check" id="sw_dsc" onchange="updateProtocol(this)"/>
-                                    <label class="onoffswitch-label" for="sw_dsc"></label>
-                                </div>
-                            </td>
-                            <td>
-                                <div id ="sw_dsc_text">DSC Status</div>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td>
-                                <div class="onoffswitch">
-                                    <input type="checkbox" class="onoffswitch-checkbox" value="check" id="db_dsc" onchange="updateDebug(this)"/>
-                                    <label class="onoffswitch-label" for="db_dsc"></label>
-                                </div>
-                            </td>
-                            <td>
-                                <div id ="db_dsc_text">DSC Debug</div>
-                            </td>
-                        </tr>
-
-
-                    </table>
-                    <br>
-                    <!-- Phasellus eget enim eu lectus faucibus vestibulum. Suspendisse sodales pellentesque elementum. -->
                 </p>
             </div>
 
@@ -890,73 +677,17 @@
                 <table class="hw-table">
                     <tr>
                         <td>
-                            MQTT Gateway consists of the following parts:
+                            ESP8266 Node consists of the following parts:
                         </td>
                     </tr>
                     <tr>
                         <td>
-                            <i class="fa-fw fa fa-cogs"></i> Arduino Mega 2560
+                            <i class="fa-fw fa fa-cogs"></i> WeMos D1 | Retired
                         </td>
                     </tr>
                     <tr>
                         <td>
-                            <i class="fa-fw fa fa-cloud-upload"></i> wiz5100 Ethernet Shield with SD Card
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>                            
-                            <i class="fa-fw fa fa-home"></i> KNX TP-UART Board
-                        </td> 
-                        <td> 
-                            &nbsp&nbspSerial 1
-                        </td>
-                    </tr>
-                    <tr>
-                        <td> 
-                            <i class="fa-fw fa fa-unlock-alt"></i> DSC Security System
-                                                    </td> 
-                        <td> 
-                            &nbsp&nbspSerial 2
-                        </td>
-                    </tr>
-                    <tr>
-                        <td> 
-                            <i class="fa-fw fa fa fa-industry"></i> RS485 Shield
-                        </td> 
-                        <td> 
-                            &nbsp&nbspSerial 3
-                        </td>
-                    </tr>
-                    <tr>
-                        <td> 
-                            <i class="fa-fw wi wi-thermometer"></i> HTU21D-F Temperature / Humidity Sensor
-                        </td> 
-                        <td> 
-                            &nbsp&nbspi2c 0x40
-                        </td>
-                    </tr>
-                    <tr>
-                        <td> 
-                            <i class="fa-fw fa fa-plug"></i> INA219B DC Voltage / Current Sensor
-                        </td> 
-                        <td> 
-                            &nbsp&nbspi2c 0x44
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>                            
-                            <i class="fa-fw fa fa-clock-o"></i> DS1307 RTC
-                        </td> 
-                        <td> 
-                            &nbsp&nbspi2c 0x68
-                        </td>
-                    </tr>
-                    <tr>
-                        <td> 
-                            <i class="fa-fw wi wi-barometer"></i> BMP085 Barometric Pressure Sensor
-                        </td> 
-                        <td> 
-                            &nbsp&nbspi2c 0x77
+                            <i class="fa-fw fa fa-cloud-upload"></i> Integrated Wifi and SPIFFS Storage
                         </td>
                     </tr>
                 </table>

@@ -21,7 +21,11 @@ void sendStatus() {
   sensorJson[F("Current")]      = sensors.current;
   sensorJson[F("IP")]           = displayIP(Ethernet.localIP());
   sensorJson[F("FreeRam")]      = freeRam();
+<<<<<<< Updated upstream
   sensorJson[F("Looptime")]     = (float) sensors.looptime / 1000;
+=======
+  sensorJson[F("Looptime")]     = sensors.looptime;
+>>>>>>> Stashed changes
   sensorJson[F("Uptime")]       = getUptime();
   
   JsonObject& protocols = sensorJson.createNestedObject("Protocols");
@@ -41,6 +45,9 @@ void sendStatus() {
   debugs[F("POWER")]            = debug.POWER;
   debugs[F("PLANTNODE")]        = debug.PLANTNODE;
   debugs[F("SENSORS")]          = debug.LOCALSENSORS;
+
+  JsonObject& io = sensorJson.createNestedObject("IO");
+  io[F("RS485BUS")]             = interfaces.RS485BUS;
   
   if( debug.LOCALSENSORS ) { sensorJson.prettyPrintTo(Serial); }
 
