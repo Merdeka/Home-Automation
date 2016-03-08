@@ -6,6 +6,6 @@ Information Send:
 - Soil Moisture
 - Temperature
 - Light
-- Battery status
+- CO
 
-Hardware used is a JeeNode with RF12B and 3xAA Battery pack
+Hardware used is a JeeNode with RF12B
