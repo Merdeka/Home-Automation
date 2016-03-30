@@ -8,10 +8,11 @@
 //#define POWER_DEBUG
 //#define PLANTNODE_DEBUG
 //#define LOCALSENSORS_DEBUG
+#define DSC_TROUBLE
 
 //#define DISABLE_KNX
 //#define DISABLE_RS485
-#define DISABLE_DSC
+//#define DISABLE_DSC
 
 #include "TypeDefsSariwating.h"
 #include <ArduinoJson.h>
@@ -28,7 +29,8 @@ typedef struct {  // debug | also used to read/store EEPROM
   bool  ONEWIRE;
   bool  POWER;
   bool  PLANTNODE;
-  bool  LOCALSENSORS;    
+  bool  LOCALSENSORS;
+  bool  SHEDNODE;  
 }Debugs;
 Debugs debug;
 
@@ -50,12 +52,7 @@ typedef struct {  // Local Sensors
 }localSensors;
 localSensors sensors;
 
-payloadSoladin soladinInverter;
-payloadSoladinNode soladinNode;
-payloadOneWire oneWireData;
-payloadOneWireNode oneWireNode;
-payloadEmonTX power;
-PayloadPlantNode plantNode;
+payloadShed shedIO;
 
 // Functions prototypes
 void      sendKNXTime();
@@ -64,11 +61,12 @@ void      sendMQTT(const char* topic, JsonObject& sendJson);
 void      enableKNX();
 void      disableKNX();
 void      enableRS485();
+void      switchRS485Bus(bool value);
 void      disableRS485();
 void      enableDSC();
 void      disableDSC();
+void      dscStatusRequest();
 uint16_t  freeRam();
-void      switchRS485Bus(bool value);
 
 #include "eeprom_memory.h"
 #include "eth.h"

@@ -1,13 +1,16 @@
 #include <Wire.h>
 #include <Adafruit_BMP085.h>
 #include "Adafruit_HTU21DF.h"
-#//include <Adafruit_INA219.h>
+#include <Adafruit_INA219.h>
 
 Adafruit_BMP085  bmp;
 Adafruit_HTU21DF htu = Adafruit_HTU21DF();
 
-//Adafruit_INA219 ina219(0x44);
+Adafruit_INA219 ina219(0x45);
 
+//--------------------------------------------------------------------------------------------
+// 
+//--------------------------------------------------------------------------------------------
 void setupI2c() {
   
   Wire.begin();
@@ -38,18 +41,28 @@ void setupI2c() {
   if( debug.MAIN ) { Serial.println(F("HTU21D-F started...")); } 
 
   // Setup INA219B
-/*
   ina219.begin();
 
   if( debug.MAIN ) { Serial.println(F("INA219B started...")); }
-*/
+
 }
 
+//--------------------------------------------------------------------------------------------
+// 
+//--------------------------------------------------------------------------------------------
 void readSensors() {
   sensors.temperature = htu.readTemperature() * 100;
   sensors.humidity = htu.readHumidity();
   sensors.barometer = bmp.readPressure();
-//  sensors.voltage = ina219.getBusVoltage_V();
-//  sensors.current = ina219.getCurrent_mA();
+  sensors.voltage = ina219.getBusVoltage_V();
+  sensors.current = ina219.getCurrent_mA();
+}
+
+//--------------------------------------------------------------------------------------------
+// 
+//--------------------------------------------------------------------------------------------
+void readPower() {
+  sensors.voltage = ina219.getBusVoltage_V();
+  sensors.current = ina219.getCurrent_mA();
 }
 

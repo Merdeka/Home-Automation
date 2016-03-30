@@ -2,12 +2,14 @@
 #include <avr/wdt.h>
 #include "housekeeping.h"
 
-unsigned long fast_update, slow_update;
+unsigned long fast_update, middle_update, slow_update;
 
 //--------------------------------------------------------------------------------------------
 // Setup Routine
 //--------------------------------------------------------------------------------------------
 void setup() {
+
+  debug.SHEDNODE = true;
 
   // Read EEPROM and setup Interfaces and Debug
   setupEEPROM();
@@ -20,30 +22,28 @@ void setup() {
   }
 
                           setupEthernet();      // Setup Ethernet
-                          setupI2c();           // Setup i2c
-
-  if( interfaces.KNX )    setupKNX();           // Setup KNX
-  if( interfaces.RS485 )  setupRS485();         // Setup RS485  
-  if( interfaces.DSC )    setupDSC();           // Setup DSC
                           setupMQTT();          // Setup MQTT
-
+                          setupI2c();           // Setup i2c
+  if( interfaces.KNX )    setupKNX();           // Setup KNX                              
+  if( interfaces.RS485 )  setupRS485();         // Setup RS485
+  if( interfaces.DSC )    setupDSC();           // Setup DSC                      
                           wdt_enable(WDTO_8S);  // Enable watchdog: max 8 seconds
-}// End Setup()
+}; // End Setup()
 
 //--------------------------------------------------------------------------------------------
 // Main Program Loop
 //--------------------------------------------------------------------------------------------
 void loop() {
-
-  
+    
                          wdt_reset();      // the program is alive...for now. 
                          uptime();         // Runs the uptime routine and reenters the main loop
-                         loopTimer();      // To Measure the loop time 
+                         loopTimer();      // To Measure the loop time
+                         mqttTask();       // MQTT Loop
                          webServerTask();  // EtherNet WebServer Loop
+  if( interfaces.KNX )   Knx.task();       // KNX Loop
   if( interfaces.RS485 ) rs485.process();  // RS485 Loop
   if( interfaces.DSC )   dscTask();        // DSC Alarm Loop
-                         mqttTask();       // MQTT Loop
-  if( interfaces.KNX )   Knx.task();       // KNX Loop
+  
 
   //-------------------------------------------------------------------------------------------
   // Timed Code
@@ -52,8 +52,18 @@ void loop() {
   if ((millis()-fast_update)>10000) { // 10 Seconds
 
     fast_update = millis();
-    readSensors(); // BMP085/HTU21D-F/INA219B
-    sendStatus();
+    readSensors();   // BMP085/HTU21D-F/INA219B
+    readPower();     // INA219
+    dscPoll();
+    if (mqtt.connected()) {
+      sendStatus();
+    }
+  }
+
+    // Every 30 Seconds
+  if ((millis()-middle_update)>30000) { // 30 Seconds
+
+    middle_update = millis();
   }
 
   // Every 60 minutes
@@ -61,6 +71,7 @@ void loop() {
       
     slow_update = millis();
     getNTP();
+    dscStatusRequest();
   }
  
-}// End Main Loop
+}; // End Main Loop

@@ -1,5 +1,8 @@
 #include <EEPROM.h>
 
+//--------------------------------------------------------------------------------------------
+// Setup EEPROM
+//--------------------------------------------------------------------------------------------
 void setupEEPROM() {
 
   // Read interfaces struct from EEPROM address 512 and setup
@@ -52,14 +55,18 @@ void setupEEPROM() {
   #endif
 }
 
+//--------------------------------------------------------------------------------------------
+// Save Interfaces Struct to EEPROM address 512 and setup
+//--------------------------------------------------------------------------------------------
 void saveInterfaces() {
-    // save interfaces struct from EEPROM address 512 and setup
   EEPROM.put(512, interfaces);
   if( debug.MAIN ) { Serial.println(F("Interface Struct Saved to EEPROM")); }
 }
 
+//--------------------------------------------------------------------------------------------
+// Save Debug Struct to EEPROM address 1024 and setup
+//--------------------------------------------------------------------------------------------
 void saveDebug() {
-    // save debug struct from EEPROM address 1024 and setup
   EEPROM.put(1024, debug);
   if( debug.MAIN ) { Serial.println(F("Debug Struct Saved to EEPROM")); }
 }

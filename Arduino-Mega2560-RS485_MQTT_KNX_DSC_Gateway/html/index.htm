@@ -23,6 +23,8 @@
                             document.getElementById('uptime_txt').innerHTML = data.Uptime;
                             document.getElementById('temperature_txt').innerHTML = data.Temperature.toFixed(2) + "\u2103";
                             document.getElementById('humidity_txt').innerHTML = data.Humidity + " %";
+                            document.getElementById('voltage_txt').innerHTML = data.Voltage + " V";
+                            document.getElementById('current_txt').innerHTML = data.Current + " mA";
                             document.getElementById('barometer_txt').innerHTML = data.Barometer.toFixed(1) + " mbar";
                             document.getElementById('freeram_txt').innerHTML = data.FreeRam.toLocaleString() + " bytes";
 
@@ -154,6 +156,7 @@
             startTime();
             getJson();
         }
+
     </script>
 
 
@@ -497,14 +500,16 @@
 
 
         /* Popup Box */
-        .box {
-          width: 40%;
-          margin: 0 auto;
-          text-align: center;
-          
+        .info-box {       
+          margin: auto auto;  
         }
 
-        .button {
+        .info-button {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 125px;
+          height: 20px;
           padding: 2px;
           color: #F16521;
           border: 1px solid #F16521;
@@ -515,13 +520,14 @@
           letter-spacing: 0em;
           transition: all 0.3s ease-out;
         }
-        .button:hover {
+        .info-button:hover {
           color: #fff;
           background: #F16521;
         }
 
         .overlay {
           position: fixed;
+          overflow-y: scroll;
           top: 0;
           bottom: 0;
           left: 0;
@@ -565,6 +571,7 @@
           color: #F16521;
         }
         .popup .content {
+          font-size: small;
           max-height: 50%;
           overflow: auto;
           color: #000;
@@ -579,6 +586,18 @@
           }
         }
 
+[aria-hidden="true"] {    
+  transition: opacity 1s, z-index 0s 1s;
+  width: 100vw;
+  z-index: -1; 
+  opacity: 0;  }
+
+[aria-hidden="false"] {  
+  transition: opacity 1s;
+  width: 100%; 
+  z-index: 1;  
+  opacity: 1; 
+}
 
     </style>
 
@@ -836,11 +855,21 @@
                     Info
                 </h3>
                 <p>
-            <div class="box">
-            <a class="button" href="#mqtt_popup">MQTT Topics</a>
+            <div class="info-box">
+                <table style="width:90%">
+                    <tr>
+                        <td>
+                            <a class="info-button" href="#mqtt-info">MQTT Topics</a><br>
+                            <a class="info-button" href="#rs485-info">RS485 Info</a>
+                        </td>
+                        <td>
+                            <a class="info-button" href="#knx-info">KNX Addresses</a><br>
+                            <a class="info-button" href="#hardware-info">Hardware Info</a>
+                    </tr>
+                </table>
         </div>
 
-        <div id="mqtt_popup" class="overlay">
+        <div id="mqtt-info" class="overlay">
             <div class="popup">
                 <h2>MQTT Topics</h2>
                 <a class="close" href="#">&times;</a>
@@ -870,8 +899,123 @@
                 </div>
             </div>
         </div>
-                </p>
+
+        <div id="knx-info" class="overlay">
+            <div class="popup">
+                <h2>KNX</h2>
+                <a class="close" href="#">&times;</a>
+                <div class="content">
+                    <p>
+                        <h2 style="font-size:small;">Inbound</h2>
+                        2/0/1
+                    </p>
+                    <p>
+                        <h2 style="font-size:small;">Outbound</h2>
+                        0/0/14
+                    </p>
+                </div>
             </div>
+        </div>
+
+        <div id="rs485-info" class="overlay">
+            <div class="popup">
+                <h2>RS485</h2>
+                <a class="close" href="#">&times;</a>
+                <div class="content">
+                    <p>
+                        <h2 style="font-size:small;">Typedef Structures Data</h2>
+                        typedef struct {<br>
+                          uint16_t      PVvolt;<br>
+                          uint16_t      PVamp;<br>
+                          uint16_t      ACgridPower;<br>
+                          uint16_t      ACgridFreq;<br>
+                          uint16_t      ACgridVolt;<br>
+                          uint16_t      DeviceTemp;<br>
+                          uint16_t      AlarmFlag;<br>
+                          uint16_t      TotalPower;<br>
+                          uint16_t      TotalOperationTime;<br>  
+                        } payloadSoladin;<br>
+                        <br>
+                        typedef struct {<br>
+                          uint16_t      Temp;<br>
+                          uint16_t      Humidity;<br>
+                          uint16_t      freeRam;<br>
+                          unsigned long uptimeDay;<br>
+                          uint8_t       uptimeHour;<br>
+                          uint8_t       uptimeMinute;<br>
+                          uint8_t       uptimeSecond;<br>
+                          unsigned long looptime;<br>
+                        } payloadSoladinNode;<br>
+                        <br>
+                        typedef struct {<br>
+                          byte          address0;<br>
+                          byte          address1;<br>
+                          byte          address2;<br>
+                          byte          address3;<br>
+                          byte          address4;<br>
+                          byte          address5;<br>
+                          byte          address6;<br>
+                          byte          address7;<br>
+                          uint16_t      temperature;<br>        
+                        }payloadOneWire;<br>
+                        <br>
+                        typedef struct {<br>
+                          uint16_t      Temp;<br>
+                          uint16_t      freeRam;<br>
+                          unsigned long uptimeDay;<br>
+                          uint8_t       uptimeHour;<br>
+                          uint8_t       uptimeMinute;<br>
+                          uint8_t       uptimeSecond;<br>
+                          unsigned long looptime;<br>
+                        } payloadOneWireNode;<br>
+                        <br>
+                        typedef struct {<br>
+                          uint16_t      importing;<br>
+                          uint16_t      power1;<br>
+                          uint16_t      power2;<br>
+                          uint16_t      power3;<br>
+                          uint16_t      voltage;<br>     
+                        }payloadEmonTX;<br>
+                        <br>
+                        typedef struct {<br>
+                          uint16_t      Temperature;<br>
+                          uint16_t      Humidity;<br>
+                          uint16_t      SoilSensor;<br>
+                          uint16_t      CO;<br>
+                          uint16_t      freeRam;<br>
+                          unsigned long uptimeDay;<br>
+                          uint8_t       uptimeHour;<br>
+                          uint8_t       uptimeMinute;<br>
+                          uint8_t       uptimeSecond;<br>
+                          unsigned long looptime;<br>
+                        } PayloadPlantNode;<br>
+                    </p>
+                    <p>
+                        <h2 style="font-size:small;">Pinout</h2>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div id="hardware-info" class="overlay">
+            <div class="popup">
+                <h2>Hardware Info</h2>
+                <a class="close" href="#">&times;</a>
+                <div class="content">
+                    <p>
+                        <h2 style="font-size:small;">Arduino Pins</h2>
+                    </p>
+                    <p>
+                        <h2 style="font-size:small;">Serial Ports</h2>
+                    </p>
+                    <p>
+                        <h2 style="font-size:small;">i2c Addresses</h2>
+                    </p>
+                </div>
+            </div>
+        </div>    
+
+
 
 
         </div>
@@ -940,7 +1084,7 @@
                             <i class="fa-fw fa fa-plug"></i> INA219B DC Voltage / Current Sensor
                         </td> 
                         <td> 
-                            &nbsp&nbspi2c 0x44
+                            &nbsp&nbspi2c 0x45
                         </td>
                     </tr>
                     <tr>

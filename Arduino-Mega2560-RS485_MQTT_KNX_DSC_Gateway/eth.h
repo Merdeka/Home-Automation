@@ -9,7 +9,7 @@
 #define TCP_BUFFER_SIZE    128
 static char buf[TCP_BUFFER_SIZE];  
 
-EthernetClient ethClient;
+EthernetClient ETHERNET;
 EthernetUDP udp;
 EthernetServer webServer(80);  // create a server at port 80
 
@@ -23,6 +23,9 @@ IPAddress ip    ( 192, 168, 60,  220 );
 IPAddress gw    ( 192, 168, 60,  254 );
 IPAddress mask  ( 255, 255, 255, 0   );
 
+//--------------------------------------------------------------------------------------------
+// Setup Ethernet
+//--------------------------------------------------------------------------------------------
 void setupEthernet() {
   
   // Setup Ethernet
@@ -47,6 +50,9 @@ void setupEthernet() {
   webServer.begin();           // start to listen for clients
 }
 
+//--------------------------------------------------------------------------------------------
+// 
+//--------------------------------------------------------------------------------------------
 String displayIP(IPAddress address) {
  return String(address[0]) + "." + 
         String(address[1]) + "." + 
@@ -54,7 +60,9 @@ String displayIP(IPAddress address) {
         String(address[3]);
 }
 
+//--------------------------------------------------------------------------------------------
 // sets every element of str to 0 (clears array)
+//--------------------------------------------------------------------------------------------
 void StrClear(char *str, char length)
 {
     for (int i = 0; i < length; i++) {
@@ -62,9 +70,11 @@ void StrClear(char *str, char length)
     }
 }
 
+//--------------------------------------------------------------------------------------------
 // searches for the string sfind in the string str
 // returns 1 if string found
 // returns 0 if string not found
+//--------------------------------------------------------------------------------------------
 char StrContains(char *str, char *sfind)
 {
     char found = 0;
@@ -92,6 +102,9 @@ char StrContains(char *str, char *sfind)
     return 0;
 }
 
+//--------------------------------------------------------------------------------------------
+// 
+//--------------------------------------------------------------------------------------------
 String getUptime();
 
 // send the state update to the web browser
@@ -103,6 +116,8 @@ void getjSonState(EthernetClient cl)
   webJson[F("Temperature")]  = (float) sensors.temperature / 100;
   webJson[F("Humidity")]     = sensors.humidity;
   webJson[F("Barometer")]    = (float) sensors.barometer / 100;
+  webJson[F("Voltage")]      = sensors.voltage;
+  webJson[F("Current")]      = sensors.current;
   webJson[F("FreeRam")]      = freeRam();
   webJson[F("Looptime")]     = sensors.looptime;
   webJson[F("Uptime")]       = getUptime();
@@ -133,7 +148,9 @@ void getjSonState(EthernetClient cl)
   webJson.printTo(cl);
 }
 
-
+//--------------------------------------------------------------------------------------------
+// 
+//--------------------------------------------------------------------------------------------
 char* processFile(char clientline[255]) {
    char *filename;
    filename = clientline + 5;
@@ -141,6 +158,9 @@ char* processFile(char clientline[255]) {
   return filename;
 }
 
+//--------------------------------------------------------------------------------------------
+// 
+//--------------------------------------------------------------------------------------------
 void webServerTask() {
 
     bool DONOTPRINT = false;

@@ -1,16 +1,16 @@
 // Commands to DSC
-const char POLL[]                               PROGMEM = "000";
-const char STATUS_REPORT[]                      PROGMEM = "001";
-const char SET_TIME_DATE[]                      PROGMEM = "010";
-const char COMMAND_OUTPUT_CONTROL[]             PROGMEM = "020";
-const char PARTITION_ARM_AWAY[]                 PROGMEM = "030";
-const char PARTITION_ARM_STAY[]                 PROGMEM = "031";
-const char PARTITION_ARM_ZERO_ENTRY[]           PROGMEM = "032";
-const char PARTITION_ARM_CONTROL[]              PROGMEM = "033"; // Needs PIN Code
-const char PARTITION_DISARM_CONTROL[]           PROGMEM = "040"; // Needs PIN Code
-const char DESCRIPTIVE_ARMING_ENABLE[]          PROGMEM = "050";
+const char POLL[]                                       = "000";
+const char STATUS_REPORT[]                              = "001";
+const char SET_TIME_DATE[]                              = "010";
+const char COMMAND_OUTPUT_CONTROL[]                     = "020";
+const char PARTITION_ARM_AWAY[]                         = "030";
+const char PARTITION_ARM_STAY[]                         = "031";
+const char PARTITION_ARM_ZERO_ENTRY[]                   = "032";
+const char PARTITION_ARM_CONTROL[]                      = "033"; // Needs PIN Code
+const char PARTITION_DISARM_CONTROL[]                   = "040"; // Needs PIN Code
+const char DESCRIPTIVE_ARMING_ENABLE[]                  = "050";
 
-const char CODE_SEND[]                          PROGMEM = "200";
+const char CODE_SEND[]                                  = "200";
 
 // Commands from DSC
 const uint16_t COMMAND_ACKNOWLEDGE              PROGMEM = 500;
@@ -32,8 +32,8 @@ const uint16_t PARTITION_NOT_READY              PROGMEM = 651; // MQTT 5
 const uint16_t PARTITION_ARMED                  PROGMEM = 652; // MQTT 0, 1, 2, 3
 const uint16_t PARTITION_IN_ALARM               PROGMEM = 654; // MQTT 6
 const uint16_t PARTITION_DISARMED               PROGMEM = 655; // MQTT 7
-const uint16_t EXIT_DELAY_IN_PROGRESS           PROGMEM = 656; // MQTT 8
-const uint16_t ENTRY_DELAY_IN_PROGRESS          PROGMEM = 657; // MQTT 9
+const uint16_t EXIT_DELAY_IN_PROGRESS           PROGMEM = 656;
+const uint16_t ENTRY_DELAY_IN_PROGRESS          PROGMEM = 657;
 const uint16_t KEYPAD_LOCKOUT                   PROGMEM = 658;
 const uint16_t INVALID_ACCES_CODE               PROGMEM = 670;
 const uint16_t FUNCTION_NOT_AVAILABLE           PROGMEM = 671;
@@ -46,3 +46,6 @@ const uint16_t PANEL_BATTERY_TROUBLE            PROGMEM = 800;
 const uint16_t PANEL_BATTERY_TROUBLE_RESTORE    PROGMEM = 801;
 const uint16_t PANEL_AC_TROUBLE                 PROGMEM = 802;
 const uint16_t PANEL_AC_TROUBLE_RESTORE         PROGMEM = 803;
+
+const uint16_t TROUBLE_STATUS                   PROGMEM = 840;
+const uint16_t TROUBLE_STATUS_RESTORE           PROGMEM = 841;

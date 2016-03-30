@@ -3,8 +3,11 @@ unsigned long    uptimeDay = 0;
 uint8_t uptimeHour, uptimeMinute, uptimeSecond, uptimeSecondStamp, uptimeOnce = 0;
 
 //************************ Uptime Code - Makes a count of the total up time since last start ****************//
-//It will work for any main loop's, that loop moret han twice a second: not good for long delays etc
+//It will work for any main loop's, that loop more than twice a second: not good for long delays etc
 
+//--------------------------------------------------------------------------------------------
+// 
+//--------------------------------------------------------------------------------------------
 void uptime(){
   //** Checks For a Second Change *****//  
   if( millis()%1000 <= 500 && uptimeOnce == 0 ){
@@ -42,6 +45,9 @@ void uptime(){
  };                      
 };
 
+//--------------------------------------------------------------------------------------------
+// 
+//--------------------------------------------------------------------------------------------
 String getUptime() {
 
   String  uptime =  (String) uptimeDay;
@@ -56,6 +62,9 @@ String getUptime() {
   return uptime;
 }
 
+//--------------------------------------------------------------------------------------------
+// 
+//--------------------------------------------------------------------------------------------
 String makeUptime(long upDay, uint8_t upHour, uint8_t upMinute, uint8_t upSecond) {
 
   String  uptime =  (String) upDay;
@@ -70,14 +79,18 @@ String makeUptime(long upDay, uint8_t upHour, uint8_t upMinute, uint8_t upSecond
   return uptime;
 }
 
+//--------------------------------------------------------------------------------------------
 // SRam check
+//--------------------------------------------------------------------------------------------
 uint16_t freeRam() {
   extern int __heap_start, *__brkval; 
   int v; 
   return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
 }
 
+//--------------------------------------------------------------------------------------------
 // Time the Loop in microsecond
+//--------------------------------------------------------------------------------------------
 void loopTimer() {
   static unsigned long thisMicros = 0;
   static unsigned long lastMicros = 0;

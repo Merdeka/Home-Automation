@@ -4,8 +4,12 @@ ICSC rs485(Serial3, 40, 2); // Serial port, NodeID, DE Pin
 
 #define BUSRELAY 8
 
+//--------------------------------------------------------------------------------------------
+// 
+//--------------------------------------------------------------------------------------------
 void powerCallBack(unsigned char src, char command, unsigned char len, char *data) {
-  
+
+  payloadEmonTX power;
   power = *(payloadEmonTX*) data;
 
   DynamicJsonBuffer  powerBuffer;
@@ -22,8 +26,12 @@ void powerCallBack(unsigned char src, char command, unsigned char len, char *dat
 
 }
 
+//--------------------------------------------------------------------------------------------
+// 
+//--------------------------------------------------------------------------------------------
 void soladinCallBack(unsigned char src, char command, unsigned char len, char *data) {
-  
+
+  payloadSoladin soladinInverter;
   soladinInverter = *(payloadSoladin*) data;
 
   DynamicJsonBuffer  soladinBuffer;
@@ -39,14 +47,21 @@ void soladinCallBack(unsigned char src, char command, unsigned char len, char *d
   soladinJson[F("AlarmFlag")]           = soladinInverter.AlarmFlag;
   soladinJson[F("TotalPower")]          = (float) soladinInverter.TotalPower / 100;
   soladinJson[F("TotalOperationTime")]  = soladinInverter.TotalOperationTime;
+  soladinJson[F("FW_ID")]               = soladinInverter.FWID;
+  soladinJson[F("FW_version")]          = soladinInverter.FWversion;
+  soladinJson[F("FW_date")]             = soladinInverter.FWdate;
   
   if( debug.SOLADIN ) { soladinJson.prettyPrintTo(Serial); }
 
   sendMQTT("iot/sariwating/soladin", soladinJson);
 }
 
+//--------------------------------------------------------------------------------------------
+// 
+//--------------------------------------------------------------------------------------------
 void soladinNodeCallBack(unsigned char src, char command, unsigned char len, char *data) {
-  
+
+  payloadSoladinNode soladinNode;
   soladinNode = *(payloadSoladinNode*) data;
   
   DynamicJsonBuffer  soladinNodeBuffer;
@@ -64,17 +79,21 @@ void soladinNodeCallBack(unsigned char src, char command, unsigned char len, cha
   sendMQTT("iot/sariwating/hardware/status/soladinnode", soladinNodeJson);
 }
 
+//--------------------------------------------------------------------------------------------
+// 
+//--------------------------------------------------------------------------------------------
 void plantNodeCallBack(unsigned char src, char command, unsigned char len, char *data) {
-  
+
+  PayloadPlantNode plantNode;
   plantNode = *(PayloadPlantNode*) data;
   
   DynamicJsonBuffer  plantNodeBuffer;
   JsonObject& plantNodeJson = plantNodeBuffer.createObject();
 
   plantNodeJson[F("Timestamp")]   = getTimeStamp(); 
-  plantNodeJson[F("Temperature")] = (float) plantNode.Temperature / 100;
-  plantNodeJson[F("Humidity")]    = (float) plantNode.Humidity / 100;
-  plantNodeJson[F("SoilSensor")]  = plantNode.SoilSensor / 100;
+  plantNodeJson[F("Temperature")] = plantNode.Temperature;
+  plantNodeJson[F("Humidity")]    = plantNode.Humidity;
+  plantNodeJson[F("SoilSensor")]  = plantNode.SoilSensor;
   plantNodeJson[F("CO")]          = plantNode.CO;
   
   if( debug.PLANTNODE ) { plantNodeJson.prettyPrintTo(Serial); }
@@ -94,8 +113,12 @@ void plantNodeCallBack(unsigned char src, char command, unsigned char len, char 
   sendMQTT("iot/sariwating/hardware/status/plantnode", plantNodeCpuJson);
 }
 
+//--------------------------------------------------------------------------------------------
+// 
+//--------------------------------------------------------------------------------------------
 void oneWireCallBack(unsigned char src, char command, unsigned char len, char *data) {
 
+  payloadOneWire oneWireData;
   oneWireData = *(payloadOneWire*) data;
 
   char* address = "00:00:00:00:00:00:00:00";
@@ -119,12 +142,17 @@ void oneWireCallBack(unsigned char src, char command, unsigned char len, char *d
   const char* OneWireJeeNode  PROGMEM = "10:5f:eb:ed:00:08:00:f9";
   
   if( (String) address == (String) Woonkamer ) { // Woonkamer Temp
-    Knx.write(3, (float) oneWireData.temperature / 100);
+    
+    if( interfaces.KNX ) { Knx.write(3, (float) oneWireData.temperature / 100); }
   }
 }
 
+//--------------------------------------------------------------------------------------------
+// 
+//--------------------------------------------------------------------------------------------
 void oneWireNodeCallBack(unsigned char src, char command, unsigned char len, char *data) {
-  
+
+    payloadOneWireNode oneWireNode;
     oneWireNode = *(payloadOneWireNode*) data;
 
     DynamicJsonBuffer  oneWireNodeBuffer;
@@ -141,6 +169,52 @@ void oneWireNodeCallBack(unsigned char src, char command, unsigned char len, cha
     sendMQTT("iot/sariwating/hardware/status/onewirejeenode", oneWireNodeJson);
 }
 
+//--------------------------------------------------------------------------------------------
+// 
+//--------------------------------------------------------------------------------------------
+void shedIOCallBack(unsigned char src, char command, unsigned char len, char *data) {
+
+    shedIO = *(payloadShed*) data;
+
+    DynamicJsonBuffer  shedIOBuffer;
+    JsonObject& shedIOJson = shedIOBuffer.createObject();
+    
+    shedIOJson[F("Timestamp")]   = getTimeStamp(); 
+    shedIOJson[F("Temperature")] = (float) shedIO.Temp / 100;
+    shedIOJson[F("Button1")]     = shedIO.button_1;
+    shedIOJson[F("Button2")]     = shedIO.button_2;
+    shedIOJson[F("Relay1")]      = shedIO.relay_1;
+    shedIOJson[F("Relay2")]      = shedIO.relay_2;
+     
+    if( debug.SHEDNODE ) { shedIOJson.prettyPrintTo(Serial); }
+  
+    sendMQTT("iot/sariwating/shednode", shedIOJson);
+}
+
+//--------------------------------------------------------------------------------------------
+// 
+//--------------------------------------------------------------------------------------------
+void shedNodeCallBack(unsigned char src, char command, unsigned char len, char *data) {
+
+    payloadShedNode shedNode;
+    shedNode = *(payloadShedNode*) data;
+
+    DynamicJsonBuffer  shedNodeBuffer;
+    JsonObject& shedNodeJson = shedNodeBuffer.createObject();
+    
+    shedNodeJson[F("Timestamp")]   = getTimeStamp(); 
+    shedNodeJson[F("FreeRam")]     = shedNode.freeRam;
+    shedNodeJson[F("Looptime")]    = shedNode.looptime;
+    shedNodeJson[F("Uptime")]      = makeUptime(shedNode.uptimeDay, shedNode.uptimeHour, shedNode.uptimeMinute, shedNode.uptimeSecond);
+     
+    if( debug.SHEDNODE ) { shedNodeJson.prettyPrintTo(Serial); }
+  
+    sendMQTT("iot/sariwating/hardware/status/shednode", shedNodeJson);
+}
+
+//--------------------------------------------------------------------------------------------
+// 
+//--------------------------------------------------------------------------------------------
 void setupRS485() {
 
   pinMode(BUSRELAY, OUTPUT);
@@ -156,13 +230,21 @@ void setupRS485() {
   rs485.registerCommand(char(0x25), &plantNodeCallBack);
   rs485.registerCommand(char(0x31), &oneWireCallBack);
   rs485.registerCommand(char(0x32), &oneWireNodeCallBack);
+  rs485.registerCommand(char(0x45), &shedIOCallBack);
+  rs485.registerCommand(char(0x46), &shedNodeCallBack);
 }
 
+//--------------------------------------------------------------------------------------------
+// 
+//--------------------------------------------------------------------------------------------
 void stopRS485() {
   
   Serial3.end();
 }
 
+//--------------------------------------------------------------------------------------------
+// 
+//--------------------------------------------------------------------------------------------
 void enableRS485() {
   
   if( debug.MAIN ) { Serial.println(F("RS485 Protocol Enabled")); }
@@ -171,6 +253,9 @@ void enableRS485() {
   setupRS485();
 }
 
+//--------------------------------------------------------------------------------------------
+// 
+//--------------------------------------------------------------------------------------------
 void disableRS485() {
   
   if( debug.MAIN ) { Serial.println(F("RS485 Protocol Disabled")); }
@@ -179,6 +264,18 @@ void disableRS485() {
   stopRS485();
 }
 
+//--------------------------------------------------------------------------------------------
+// 
+//--------------------------------------------------------------------------------------------
+void sendRS485(char cmd, uint16_t len, char* packet) {
+
+  rs485.broadcast(cmd, len, packet);
+  
+}
+
+//--------------------------------------------------------------------------------------------
+// 
+//--------------------------------------------------------------------------------------------
 void switchRS485Bus(bool value) {
 
   interfaces.RS485BUS = value;

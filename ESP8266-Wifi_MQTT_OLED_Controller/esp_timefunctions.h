@@ -2,12 +2,11 @@
 #include <TimeLib.h>
 #include <Timezone.h>
 
-RTC_DS1307 RTC;
-unsigned long inline ntpUnixTime (UDP &udp);
+RTC_Millis RTC;
 
 //Central European Time (Amsterdam, Paris)
-TimeChangeRule CEST = {"CEST", Last, Sun, Mar, 2, 120};     //Central European Summer Time
-TimeChangeRule CET = {"CET ", Last, Sun, Oct, 3, 60};       //Central European Standard Time
+TimeChangeRule CEST = {"CEST", Last, Sun, Mar, 2, 120};     // Central European Summer Time
+TimeChangeRule CET  = {"CET ", Last, Sun, Oct, 3, 60 };     // Central European Standard Time
 Timezone myTZ(CEST, CET);
 
 //If TimeChangeRules are already stored in EEPROM, comment out the three
@@ -17,11 +16,57 @@ Timezone myTZ(CEST, CET);
 TimeChangeRule *tcr;        //pointer to the time change rule, use to get TZ abbrev
 time_t utc, localTZ;
 
-byte ntpServer[] = { 193, 79, 237, 14 };    // ntp1.nl.net NTP server
+unsigned long inline ntpUnixTime (UDP &udp);
 
-//--------------------------------------------------------------------------------------------
-// 
-//--------------------------------------------------------------------------------------------
+char* months[] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+
+void setupRTC() {
+
+/*  
+  // Setup the DS1307 Real Time Clock
+  if (! RTC.isrunning()) {
+    #ifdef DEBUG
+      Serial.println(F("RTC is NOT running!"));
+    #endif
+    // following line sets the RTC to the date & time this sketch was compiled
+    //RTC.adjust(DateTime(__DATE__, __TIME__));
+  }
+*/
+    RTC.begin(DateTime(F(__DATE__), F(__TIME__)));
+  
+}
+
+String printDigits(byte digits){
+  // utility function for digital clock display: prints colon and leading 0
+
+  String t = "";
+  if(digits < 10) {
+    t += "0";
+  }
+  t += digits, DEC;
+  return t;
+}
+
+String getDateTime() {
+
+  DateTime now = RTC.now();
+  utc = now.unixtime();
+  localTZ = myTZ.toLocal(utc, &tcr);
+  
+  String  dt  = "";
+          dt += day(localTZ), DEC;
+          dt += " ";
+          dt += months[month(localTZ) - 1];
+          dt += " ";
+          dt += printDigits(hour(localTZ));
+          dt += ":";
+          dt += printDigits(minute(localTZ));
+          dt += ":";
+          dt += printDigits(second(localTZ));
+  
+   return dt;
+}
+
 String getTimeStamp() {
 
   DateTime now = RTC.now();
@@ -29,14 +74,13 @@ String getTimeStamp() {
   localTZ = myTZ.toLocal(utc, &tcr);
   
   char timeStamp[] = "00/00/0000 00:00:00";
-  sprintf(timeStamp,"%02d/%02d/%04d %02d:%02d:%02d", day(localTZ), month(localTZ), year(localTZ), hour(localTZ), minute(localTZ), second(localTZ));
+  sprintf( timeStamp,"%02d/%02d/%04d %02d:%02d:%02d", day(localTZ), month(localTZ), year(localTZ), hour(localTZ), minute(localTZ), second(localTZ) );
 
   return (String) timeStamp;
 };
 
-//--------------------------------------------------------------------------------------------
-// 
-//--------------------------------------------------------------------------------------------
+byte ntpServer[] = { 193, 79, 237, 14 };    // ntp1.nl.net NTP server
+
 void getNTP() {
   
   unsigned long unixTime = ntpUnixTime(udp);
@@ -44,25 +88,19 @@ void getNTP() {
   // Set RTC Clock
   DateTime ntp = DateTime(unixTime);
   if( ntp.year() >= 2100 ) {
-    if( debug.MAIN ) { Serial.println(F("NTP update invalid..")); }
+    #ifdef DEBUG
+      Serial.println(F("NTP update invalid.."));
+    #endif
   } else {
     RTC.adjust(DateTime(unixTime));
-
-    if( interfaces.KNX ) {
-      sendKNXTime();
-      sendKNXDate();
-    }
     
-    if( debug.MAIN ) { 
+    #ifdef DEBUG
       Serial.print(F("RTC updated from NTP: "));
       Serial.println(getTimeStamp());
-    }
+    #endif
   }
 }
 
-//--------------------------------------------------------------------------------------------
-// 
-//--------------------------------------------------------------------------------------------
 unsigned long inline ntpUnixTime( UDP &udp ) {
   static int udpInited = udp.begin(123); // open socket on arbitrary port
 
