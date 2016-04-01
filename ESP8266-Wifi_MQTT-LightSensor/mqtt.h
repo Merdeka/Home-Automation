@@ -1,8 +1,7 @@
 #include <PubSubClient.h>
-#include <ArduinoJson.h>
 
 // MQTT Server
-IPAddress mqtt_server(192, 168, 61, 15);
+IPAddress mqtt_server(192, 168, 60, 2);
 
 PubSubClient mqtt(wifi);
 
@@ -79,6 +78,7 @@ void sendSensors() {
   sensorJson[F("Timestamp")]    = getTimeStamp(); 
   sensorJson[F("Temperature")]  = (float) sensorData.temperature / 100;
   sensorJson[F("Humidity")]     = (float) sensorData.humidity / 100;
+  sensorJson[F("Pressure")]     = (float) sensorData.pressure / 100;
   sensorJson[F("LightSensor")]  = sensorData.lightSensor;
 
   #ifdef DEBUG
@@ -96,9 +96,9 @@ void sendStatus() {
   nodeJson[F("Timestamp")]      = getTimeStamp(); 
   nodeJson[F("IP")]             = displayIP(WiFi.localIP());
   nodeJson[F("VCC")]            = (float) ESP.getVcc() / 1000;
-  nodeJson[F("ChipID")]         = getChipId();
+  nodeJson[F("ChipID")]         = sensorData.ChipId;
   nodeJson[F("ChipSpeed")]      = ESP.getCpuFreqMHz();
-  nodeJson[F("FlashChipID")]    = getFlashChipId();
+  nodeJson[F("FlashChipID")]    = sensorData.FlashChipId;
   nodeJson[F("FreeRam")]        = ESP.getFreeHeap();
   nodeJson[F("Looptime")]       = (float) sensorData.looptime / 1000;
   nodeJson[F("Uptime")]         = getUptime();

@@ -1,16 +1,22 @@
 #define DEBUG
 
+// Functions prototypes
+String getUptime();
+
 // Setup TypeDefs
 typedef struct { // Sensor Data
     uint16_t      lightSensor;
     uint16_t      temperature;
     uint16_t      humidity;
+    uint32_t      pressure;
     unsigned long looptime;
     uint32_t      ChipId;
     uint32_t      FlashChipId;
 } SENSORDATA;
 SENSORDATA sensorData;
 
+#include <ArduinoJson.h>
+#include "spiffs.h"
 #include "esp_wifi.h"
 #include "esp_timefunctions.h"
 #include "esp_chipid.h"

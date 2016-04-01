@@ -1,0 +1,710 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>ESP8266 | Status</title>
+
+    <script>
+        // Open WebSocket to Server
+        var reconnectInterval = 30000; // 30 Seconds
+        var wSocket;
+
+        var connect = function() {
+            wSocket = new WebSocket("ws://" + window.location.hostname + ":81");
+            console.log(window.location.hostname);
+
+            wSocket.onopen=  function() {
+              console.log('websocket open');
+            };
+
+            wSocket.onerror=  function() {
+              console.log('trying to reconnect');
+              setTimeout(connect, reconnectInterval);
+            };
+
+            wSocket.onclose=  function() {
+              console.log('trying to reconnect');
+              setTimeout(connect, reconnectInterval);
+            };
+
+            wSocket.onmessage = function (msg) {
+                var data = JSON.parse(msg.data);
+                console.log(msg);
+
+                document.getElementById('uptime_txt').innerHTML = data.Uptime;
+                document.getElementById('vcc_txt').innerHTML = data.VCC.toFixed(2) + " volt";                       
+                document.getElementById('temperature_txt').innerHTML = data.Temperature.toFixed(2) + "\u2103";
+                document.getElementById('humidity_txt').innerHTML = data.Humidity + " %";
+                document.getElementById('barometer_txt').innerHTML = data.Pressure.toFixed(1) + " mbar";
+                document.getElementById('lightsensor_txt').innerHTML = data.LightSensor + " Lux";
+                document.getElementById('freeram_txt').innerHTML = data.FreeRam.toLocaleString() + " bytes"; 
+
+				
+                // Loop Time
+                var lt = data.Looptime / 1000;
+                document.getElementById("looptime_text").innerHTML = lt.toFixed(3) + " ms";    
+            };
+
+        };
+        connect();
+
+        // Update Clock
+        function startTime()
+        {
+            var today = new Date();
+            var h = today.getHours();
+            var m = today.getMinutes();
+            var s = today.getSeconds();
+            h = twoDigits(h);
+            m = twoDigits(m);
+            s = twoDigits(s);
+            document.getElementById('header-clock').innerHTML = "ESP8266 | Status | " +h+":"+m+":"+s;
+            var t = setTimeout(function(){startTime()},500);
+        }
+
+        // Convert one to two digits for date and time
+        function twoDigits(number) {
+            return number < 10 ? '0' + number : number;
+        } 
+
+        // Send Debug Switches
+        function updateDebug( element ) {
+
+            var myRequest = new XMLHttpRequest();
+
+            var iValue;
+            if(element.checked === true ){
+                iValue = 1;
+            } else if (element.checked === false) {
+                iValue = 0;
+            }
+
+            var data = "?"+element.id+"="+iValue;
+
+            console.log(data);
+
+            myRequest.open("GET", data, true);
+            myRequest.send(null);
+        }
+
+        // Startup Script
+        function startup(){
+            startTime();
+        }
+    </script>
+
+
+    <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.6.0/pure-min.css">
+    <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.6.0/grids-responsive-min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/weather-icons/2.0.10/css/weather-icons.css">
+
+    <style>
+            * {
+            -webkit-box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            box-sizing: border-box;
+        }
+
+        /*
+         * -- BASE STYLES --
+         * Most of these are inherited from Base, but I want to change a few.
+         */
+        body {
+            line-height: 1.7em;
+            color: #7f8c8d;
+            font-size: 13px;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6,
+        label {
+            color: #34495e;
+        }
+
+        .pure-img-responsive {
+            max-width: 100%;
+            height: auto;
+        }
+
+        /*
+         * -- LAYOUT STYLES --
+         * These are some useful classes which I will need
+         */
+        .l-box {
+            padding: 1em;
+        }
+
+        .l-box-lrg {
+            padding: 2em;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .is-center {
+            text-align: center;
+        }
+
+
+
+        /*
+         * -- PURE FORM STYLES --
+         * Style the form inputs and labels
+         */
+        .pure-form label {
+            margin: 1em 0 0;
+            font-weight: bold;
+            font-size: 100%;
+        }
+
+        .pure-form input[type] {
+            border: 2px solid #ddd;
+            box-shadow: none;
+            font-size: 100%;
+            width: 100%;
+            margin-bottom: 1em;
+        }
+
+        /*
+         * -- PURE BUTTON STYLES --
+         * I want my pure-button elements to look a little different
+         */
+        .pure-button {
+            background-color: #1f8dd6;
+            color: white;
+            padding: 0.5em 2em;
+            border-radius: 5px;
+        }
+
+        a.pure-button-primary {
+            background: white;
+            color: #1f8dd6;
+            border-radius: 5px;
+            font-size: 120%;
+        }
+
+
+        /*
+         * -- MENU STYLES --
+         * I want to customize how my .pure-menu looks at the top of the page
+         */
+
+        .home-menu {
+            padding: 0.5em;
+            text-align: center;
+            box-shadow: 0 1px 1px rgba(0,0,0, 0.10);
+        }
+        .home-menu {
+            background: #4e4e32;
+        }
+        .pure-menu.pure-menu-fixed {
+            /* Fixed menus normally have a border at the bottom. */
+            border-bottom: none;
+            /* I need a higher z-index here because of the scroll-over effect. */
+            z-index: 4;
+        }
+
+        .home-menu .pure-menu-heading {
+            color: white;
+            font-weight: 400;
+            font-size: 120%;
+        }
+
+        .home-menu .pure-menu-selected a {
+            color: white;
+        }
+
+        .home-menu a {
+            color: #6FBEF3;
+        }
+        .home-menu li a:hover,
+        .home-menu li a:focus {
+            background: none;
+            border: none;
+            color: #AECFE5;
+        }
+
+
+        /*
+         * -- SPLASH STYLES --
+         * This is the blue top section that appears on the page.
+         */
+
+        .splash-container {
+              background: 
+            /* top, transparent red, faked with gradient */ 
+
+            linear-gradient(
+              rgba(78, 78, 50, 0.75), 
+              rgba(78, 78, 50, 0.25)
+            ),
+            /* bottom, image */
+            url(bg.jpg);
+
+            background-size:cover;
+
+            z-index: 1;
+            overflow: hidden;
+            /* The following styles are required for the "scroll-over" effect */
+            width: 100%;
+            height: 60%;
+            top: 0;
+            left: 0;
+            position: fixed !important;
+        }
+
+        .splash {
+            /* absolute center .splash within .splash-container */
+            width: 80%;
+            height: 50%;
+            margin: auto;
+            position: absolute;
+            top: 50px; left: 0; bottom: 0; right: 0;
+            text-align: center;
+            text-transform: uppercase;
+        }
+
+        /* This is the main heading that appears on the blue section */
+        .splash-head {
+            font-size: 20px;
+            font-weight: bold;
+            color: white;
+            border: 2px solid white;
+            padding: 1em 1.6em;
+            font-weight: 100;
+            border-radius: 12px;
+            line-height: 1em;
+        }
+
+        /* This is the subheading that appears on the blue section */
+        .splash-subhead {
+            color: white;
+            letter-spacing: 0.05em;
+            opacity: 0.8;
+        }
+
+        /*
+         * -- CONTENT STYLES --
+         * This represents the content area (everything below the blue section)
+         */
+        .content-wrapper {
+            /* These styles are required for the "scroll-over" effect */
+            position: absolute;
+            top: 55%;
+            width: 100%;
+            min-height: 12%;
+            z-index: 2;
+            background: white;
+
+        }
+
+        /* This is the class used for the main content headers (<h2>) */
+        .content-head {
+            font-weight: 400;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin: 2em 0 1em;
+        }
+
+        /* This is a modifier class used when the content-head is inside a ribbon */
+        .content-head-ribbon {
+            color: white;
+        }
+
+        /* This is the class used for the content sub-headers (<h3>) */
+        .content-subhead {
+            color: #F16521;
+        }
+            .content-subhead i {
+                margin-right: 7px;
+            }
+
+        /* This is the class used for the dark-background areas. */
+        .ribbon {
+            background: #4e4e32;
+            color: #fff;
+            font-size: 90%
+        }
+
+        /* This is the class used for the footer */
+        .footer {
+            background: #2f2f1e;
+        }
+
+        /*
+         * -- TABLET (AND UP) MEDIA QUERIES --
+         * On tablets and other medium-sized devices, we want to customize some
+         * of the mobile styles.
+         */
+        @media (min-width: 48em) {
+
+            /* We increase the body font size */
+            body {
+                font-size: 16px;
+            }
+            /* We want to give the content area some more padding */
+            .content {
+                padding: 1em;
+            }
+
+            /* We can align the menu header to the left, but float the
+            menu items to the right. */
+            .home-menu {
+                text-align: left;
+            }
+                .home-menu ul {
+                    float: right;
+                }
+
+            /* We increase the height of the splash-container */
+        /*    .splash-container {
+                height: 500px;
+            }*/
+
+            /* We decrease the width of the .splash, since we have more width
+            to work with */
+            .splash {
+                width: 50%;
+                height: 50%;
+            }
+
+            .splash-head {
+                font-size: 250%;
+            }
+
+
+            /* We remove the border-separator assigned to .l-box-lrg */
+            .l-box-lrg {
+                border: none;
+            }
+
+        }
+
+        /*
+         * -- DESKTOP (AND UP) MEDIA QUERIES --
+         * On desktops and other large devices, we want to over-ride some
+         * of the mobile and tablet styles.
+         */
+        @media (min-width: 78em) {
+            /* We increase the header font size even more */
+            .splash-head {
+                font-size: 300%;
+            }
+        }
+
+        table.hw-table td {
+            padding: 1px;
+        }
+
+        .onoffswitch {
+            position: relative; width: 40px;
+            -webkit-user-select:none; -moz-user-select:none; -ms-user-select: none;
+        }
+        .onoffswitch-checkbox {
+            display: none;
+        }
+        .onoffswitch-label {
+            display: block; overflow: hidden; cursor: pointer;
+            height: 20px; padding: 0; line-height: 20px;
+            border: 2px solid #CCCCCC; border-radius: 20px;
+            background-color: #FFFFFF;
+            transition: background-color 0.3s ease-in;
+        }
+        .onoffswitch-label:before {
+            content: "";
+            display: block; width: 20px; margin: 0px;
+            background: #FFFFFF;
+            position: absolute; top: 0; bottom: 0;
+            right: 18px;
+            border: 2px solid #CCCCCC; border-radius: 20px;
+            transition: all 0.3s ease-in 0s; 
+        }
+        .onoffswitch-checkbox:checked + .onoffswitch-label {
+            background-color: #42A540;
+        }
+        .onoffswitch-checkbox:checked + .onoffswitch-label, .onoffswitch-checkbox:checked + .onoffswitch-label:before {
+           border-color: #42A540;
+        }
+        .onoffswitch-checkbox:checked + .onoffswitch-label:before {
+            right: 0px; 
+        }
+
+
+        /* Popup Box */
+        .info-box {       
+          margin: auto auto;     
+        }
+
+        .info-button {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 125px;
+          height: 20px;
+          padding: 2px;
+          color: #F16521;
+          border: 1px solid #F16521;
+          border-radius: 20px;
+          text-decoration: none;
+          cursor: pointer;
+          font-size:small;
+          letter-spacing: 0em;
+          transition: all 0.3s ease-out;
+        }
+        .info-button:hover {
+          color: #fff;
+          background: #F16521;
+        }
+
+        .overlay {
+          position: fixed;
+          top: 0;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          background: rgba(0, 0, 0, 0.7);
+          transition: opacity 500ms;
+          visibility: hidden;
+          opacity: 0;
+        }
+        .overlay:target {
+          visibility: visible;
+          opacity: 1;
+        }
+
+        .popup {
+          margin: 70px auto;
+          padding: 20px;
+          background: #fff;
+          border-radius: 5px;
+          width: 60%;
+          position: relative;
+          letter-spacing: 0em;
+          transition: all 5s ease-in-out;
+        }
+
+        .popup h2 {
+          margin-top: 0;
+          color: #F16521;
+          font-family: Tahoma, Arial, sans-serif;
+        }
+        .popup .close {
+          position: absolute;
+          top: 20px;
+          right: 30px;
+          transition: all 200ms;
+          font-size: small
+          text-decoration: none;
+          color: #333;
+        }
+        .popup .close:hover {
+          color: #F16521;
+        }
+        .popup .content {
+          max-height: 50%;
+          overflow: auto;
+          color: #000;
+        }
+
+        @media screen and (max-width: 700px){
+          .box{
+            width: 70%;
+          }
+          .popup{
+            width: 70%;
+          }
+        }
+
+
+    </style>
+
+
+
+</head>
+<body onload="startup()">
+
+<div class="header">
+    <div  class="home-menu pure-menu pure-menu-horizontal pure-menu-fixed">
+        <a style="padding: 12px 0 0 12px ; font-size: 130%;" class ="pure-menu-heading"  id ="header-clock">ESP8266 | Status</a>
+        <img style="float: left;" alt="OpenSource Logo" width="50" src="oslogo.png">
+    </div>
+</div>
+
+<div class="splash-container">
+
+
+    <div class="splash">
+        <h1 class="splash-head" id="uptime_txt"><i class="fa fa-refresh fa-spin"></i></h1>
+            <p class="splash-subhead"><i class="fa fa-bar-chart"></i> Uptime</p>
+    </div>
+</div>
+
+<div class="content-wrapper ">
+    <div class="content">
+        <h2 class="content-head is-center">ESP8266</h2>
+
+        <div class="pure-g">
+            <div class="l-box pure-u-1 pure-u-md-1-2 pure-u-lg-1-4">
+
+                <h3 class="content-subhead">
+                    <i class="fa fa-heartbeat"></i>
+                    Sensors
+                </h3>
+                <p>
+                    <table style="width:80%">
+                      <tr>
+                        <td><i class="fa-fw wi wi-thermometer"></i> Temperature</td>
+                        <td><div id="temperature_txt"><i class="fa fa-refresh fa-spin"></i></div></td>
+                      </tr>
+                      <tr>
+                        <td><i class="fa-fw wi wi-humidity"></i> Humidity</td>
+                        <td><div id="humidity_txt"><i class="fa fa-refresh fa-spin"></i></div></td>
+                      </tr>
+                      <tr>
+                        <td><i class="fa-fw wi wi-barometer"></i> Barometer</td>
+                        <td><div id="barometer_txt"><i class="fa fa-refresh fa-spin"></i></div></td>
+                      </tr>
+                      <tr>
+                        <td><i class="fa-fw fa fa-sun-o"></i> LightSensor</td>
+                        <td><div id="lightsensor_txt"><i class="fa fa-refresh fa-spin"></i></div></td>
+                      </tr>  
+                       <tr>
+                        <td><i class="fa-fw fa fa-plug"></i> VCC</td>
+                        <td><div id="vcc_txt"><i class="fa fa-refresh fa-spin"></i></div></td>
+                      </tr>
+                       <tr>
+                        <td><i class="fa-fw fa fa-server"></i> FreeRam</td>
+                        <td><div id="freeram_txt"><i class="fa fa-refresh fa-spin"></i></div></td>
+                      </tr>
+                    </table>
+                </p>
+            </div>
+
+
+            <div class="l-box pure-u-1 pure-u-md-1-2 pure-u-lg-1-4">
+                <h3 class="content-subhead">
+                    <i class="fa fa-commenting"></i>
+                    ESP8266
+                </h3>
+                <p>
+                    <table style="width:90%">
+
+                        <tr>
+                            <td>
+                                <i class="fa fa-clock-o"></i><a style="font-size:small;"> Loop Time</a>
+                            </td>
+                            <td>
+                                <div style="font-size:small;" id ="looptime_text"></div>
+                            </td>
+                        </tr>
+
+                    </table>
+                </p>
+            </div>
+
+            <div class="l-box pure-u-1 pure-u-md-1-2 pure-u-lg-1-4">
+                <h3 class="content-subhead">
+                    <i class="fa fa-info-circle"></i>
+                    Info
+                </h3>
+                <p>
+            <div class="info-box">
+            <a class="info-button" href="#mqtt_popup">MQTT Topics</a>
+        </div>
+
+        <div id="mqtt_popup" class="overlay">
+            <div class="popup">
+                <h2>MQTT Topics</h2>
+                <a class="close" href="#">&times;</a>
+                <div class="content">
+                    <p>
+                        <h2 style="font-size:small;">Inbound</h2>
+                    </p>
+                    <p>
+                        <h2 style="font-size:small;">Outbound</h2>
+                        iot/sariwating/esp/lightsensor
+                    </p>
+                    <p>
+                        <h2 style="font-size:small;">Hardware Status</h2>
+                        iot/sariwating/hardware/status/lightsensor
+                    </p>
+                    
+
+                </div>
+            </div>
+        </div>
+                </p>
+            </div>
+
+
+        </div>
+    </div>
+
+    <div class="ribbon l-box-lrg pure-g">
+        <div class="l-box-lrg is-center pure-u-1 pure-u-md-1-2 pure-u-lg-2-5">
+            <br>
+            <img class="l-box-lrg pure-img-responsive" alt="Arduino Icon" width="auto" src="esp.png">
+        </div>
+            <div class="pure-u-1 pure-u-md-1-2 pure-u-lg-3-5">
+
+            <h2 class="content-head content-head-ribbon">Hardware Setup</h2>
+
+            <p>
+                <table class="hw-table">
+                    <tr>
+                        <td>
+                            ESP8266 MQTT LightNode consists of the following parts:
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <i class="fa-fw fa fa-cogs"></i> ESP-01 (ESP8266)
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <i class="fa-fw fa fa-cloud-upload"></i> Integrated Wifi and SPIFFS Storage
+                        </td>
+                    </tr>
+					<tr>
+                        <td> 
+                            <i class="fa-fw fa fa-sun-o"></i> JeeNode Lux Plug TSL2561 Light Level Sensor
+                        </td> 
+                        <td> 
+                            &nbsp&nbspi2c 0x39
+                        </td>
+                    </tr>
+                    <tr>
+                        <td> 
+                            <i class="fa-fw wi wi-thermometer"></i> HTU21D-F Temperature / Humidity Sensor
+                        </td> 
+                        <td> 
+                            &nbsp&nbspi2c 0x40
+                        </td>
+                    </tr>
+                    <tr>
+                        <td> 
+                            <i class="fa-fw wi wi-barometer"></i> BMP180 Barometric Pressure Sensor
+                        </td> 
+                        <td> 
+                            &nbsp&nbspi2c 0x77
+                        </td>
+                    </tr>
+                </table>
+            </p>
+        </div>
+    </div>
+
+    <div class="footer l-box is-center">
+        Copyright <i class="fa fa-copyright"></i> 2016 Sariwating.net
+    </div>
+
+</div>
+
+</body>
+</html>

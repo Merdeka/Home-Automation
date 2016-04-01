@@ -1,8 +1,10 @@
 #include <Adafruit_Sensor.h>
 #include <Adafruit_TSL2561_U.h>
 #include "Adafruit_HTU21DF.h"
+#include <Adafruit_BMP085.h>
 
 Adafruit_HTU21DF htu = Adafruit_HTU21DF();
+Adafruit_BMP085 bmp;
 
 //--------------------------------------------------------------------------------------------
 // Initialize TSL256 Light sensor
@@ -48,6 +50,16 @@ void setupSensors() {
   }
   #ifdef DEBUG
      Serial.println(F("HTU21D-F started..."));
+  #endif
+
+  if (!bmp.begin()) {
+    #ifdef DEBUG
+      Serial.println(F("Could not find a valid BMP180 sensor!"));
+      while (1);
+    #endif
+  }
+  #ifdef DEBUG
+     Serial.println(F("BMP180 started..."));
   #endif
   
 }

@@ -2,7 +2,7 @@
 #include <TimeLib.h>
 #include <Timezone.h>
 
-RTC_DS1307 RTC;
+RTC_Millis RTC;
 
 //Central European Time (Amsterdam, Paris)
 TimeChangeRule CEST = {"CEST", Last, Sun, Mar, 2, 120};     // Central European Summer Time
@@ -20,14 +20,8 @@ unsigned long inline ntpUnixTime (UDP &udp);
 
 void setupRTC() {
   
-  // Setup the DS1307 Real Time Clock
-  if (! RTC.isrunning()) {
-    #ifdef DEBUG
-      Serial.println(F("RTC is NOT running!"));
-    #endif
     // following line sets the RTC to the date & time this sketch was compiled
-    //RTC.adjust(DateTime(__DATE__, __TIME__));
-  }
+    RTC.adjust(DateTime(__DATE__, __TIME__));
 }
 
 String getTimeStamp() {
